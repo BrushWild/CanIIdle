@@ -281,7 +281,9 @@
               <tr
                 v-for="calculatedDungeon in activeDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
                 :class="{idleable : calculatedDungeon.isIdleable}">
-                <td class="text-center">{{calculatedDungeon.name}}</td>
+                <td class="text-center">
+                  <span class="expansionBadge" :class="calculatedDungeon.expansion.cssClass" :title="calculatedDungeon.expansion.fullName">{{calculatedDungeon.expansion.short}}</span>{{calculatedDungeon.name}}
+                </td>
                 <td class="text-center">{{formatDRCell(calculatedDungeon.minimumDR)}}</td>
                 <td class="text-center">{{calculatedDungeon.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
               </tr>
@@ -310,7 +312,9 @@
               <tr
                 v-for="calculatedStronghold in activeStrongholds.map(function (sh){ return calculateStrongholdInstance(sh, strongholdTier); })"
                 :class="{idleable : calculatedStronghold.isIdleable}">
-                <td class="text-center">{{calculatedStronghold.name}} ({{strongholdTier}})</td>
+                <td class="text-center">
+                  <span class="expansionBadge" :class="calculatedStronghold.expansion.cssClass" :title="calculatedStronghold.expansion.fullName">{{calculatedStronghold.expansion.short}}</span>{{calculatedStronghold.name}} ({{strongholdTier}})
+                </td>
                 <td class="text-center">{{formatDRCell(calculatedStronghold.minimumDR)}}</td>
                 <td class="text-center">{{calculatedStronghold.minimumHP}} HP</td>
               </tr>
@@ -339,7 +343,9 @@
               <tr
                 v-for="calculatedTier in activeSlayerTiers.map(function (tier){ return calculateInstance(tier, true); })"
                 :class="{idleable : calculatedTier.isIdleable, warning : calculatedTier.name == 'Master'}">
-                <td class="text-center">{{calculatedTier.name}}</td>
+                <td class="text-center">
+                  <span class="expansionBadge" :class="calculatedTier.expansion.cssClass" :title="calculatedTier.expansion.fullName">{{calculatedTier.expansion.short}}</span>{{calculatedTier.name}}
+                </td>
                 <td class="text-center">{{formatDRCell(calculatedTier.minimumDR)}}</td>
                 <td class="text-center">{{calculatedTier.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
               </tr>
@@ -383,7 +389,8 @@
             <tbody>
               <template v-for="monster in findMonstersForArea('activeCombatAreas', combatChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
-                  <td class="text-center">{{monster.name}}
+                  <td class="text-center">
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
@@ -453,7 +460,8 @@
             <tbody>
               <template v-for="monster in findMonstersForArea('activeSlayerAreas', slayerChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
-                  <td class="text-center">{{monster.name}}
+                  <td class="text-center">
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
@@ -523,7 +531,8 @@
             <tbody>
               <template v-for="monster in findMonstersForArea('activeDungeons', dungeonChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
-                  <td class="text-center">{{monster.name}}
+                  <td class="text-center">
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
@@ -607,7 +616,8 @@
             <tbody>
               <template v-for="monster in findMonstersForStronghold(strongholdChoice, strongholdTier)">
                 <tr :class="{idleable : monster.isIdleable}">
-                  <td class="text-center">{{monster.name}}
+                  <td class="text-center">
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
                     <span class="pureDamageBadge" title="Deals Pure Damage (ignores DR% and AR%)">Pure</span>
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
@@ -680,7 +690,8 @@
               <template v-for="monster in findMonstersForArea('activeSlayerTiers', slayerTier, true)">
                 <tr
                   :class="{idleable : monster.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
-                  <td class="text-center">{{monster.name}}
+                  <td class="text-center">
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
@@ -749,7 +760,8 @@
               <template v-for="monster in findMonstersforEverything()">
                 <tr
                   :class="{idleable : monster.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
-                  <td class="text-center">{{monster.name}}
+                  <td class="text-center">
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
                     <span v-if="monster.damageType === 'melvorD:Pure'" class="pureDamageBadge"
                       title="Deals Pure Damage (ignores DR% and AR%)">Pure</span>
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
@@ -918,6 +930,20 @@
         return `${minimumDR} ${this.resistanceUnit} for ${this.totalHealth} HP`;
       },
 
+      getExpansionInfo(id) {
+        const str = String(id || "");
+        if (str.startsWith("melvorTotH:")) {
+          return { short: "TotH", fullName: "Throne of the Herald", cssClass: "expansion-TotH" };
+        }
+        if (str.startsWith("melvorAoD:")) {
+          return { short: "AoD", fullName: "Atlas of Discovery", cssClass: "expansion-AoD" };
+        }
+        if (str.startsWith("melvorItA:")) {
+          return { short: "ItA", fullName: "Into the Abyss", cssClass: "expansion-ItA" };
+        }
+        return { short: "Base", fullName: "Base Game (Melvor Idle)", cssClass: "expansion-Base" };
+      },
+
       // Share URL
       getShareURL() {
         const params = new URLSearchParams({
@@ -1060,6 +1086,7 @@
 
         let instanceInformation = {
           name: instance.name,
+          expansion: this.getExpansionInfo(instance.id),
           minimumDR: 0,
           minimumHP: 0,
           isIdleable: true,
@@ -1091,6 +1118,7 @@
 
         let instanceInformation = {
           name: stronghold.name,
+          expansion: this.getExpansionInfo(stronghold.id),
           minimumDR: "N/A (Pure)",
           minimumHP: 0,
           isIdleable: true,
@@ -1120,6 +1148,7 @@
 
         let monsterInformation = {
           name: monster.name,
+          expansion: this.getExpansionInfo(monster.id),
           minimumDR: isPure ? "N/A (Pure)" : 0,
           minimumHP: 0,
           maxHit: 0,

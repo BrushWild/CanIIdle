@@ -347,8 +347,8 @@ async function main() {
 
   // Slayer Tiers (Melvor Realm: Easy -> Mythical)
   const melvorSlayerCategories = [
-    ...pkgs.melvorF.data.slayerTaskCategories,
-    ...pkgs.melvorTotH.data.slayerTaskCategories,
+    ...pkgs.melvorF.data.slayerTaskCategories.map((c) => ({ ...c, ns: 'melvorF' })),
+    ...pkgs.melvorTotH.data.slayerTaskCategories.map((c) => ({ ...c, ns: 'melvorTotH' })),
   ];
   const slayerTaskList = melvorSlayerCategories.map((cat) => {
     const min = cat.monsterSelection.minLevel;
@@ -363,7 +363,7 @@ async function main() {
       }
     }
     return {
-      id: `${cat.id}`,
+      id: `${cat.ns}:${cat.id}`,
       name: cat.name,
       realm: 'Melvor',
       monsters,
