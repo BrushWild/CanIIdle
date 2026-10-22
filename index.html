@@ -38,10 +38,25 @@
 <body>
   <div id='app' class="container-fluid">
     <h1 class="text-white text-center my-4" data-toggle="tooltip" data-placement="bottom"
-      title="Now with more suffering">
-      Can I Idle Throne of the Herald?</h1>
-    <h4 class="text-white text-center my-4">Up to date as of v1.1</h4>
-    <p class="text-center my-4">
+      title="Now with Strongholds, Atlas of Discovery, and Into the Abyss!">
+      {{ realm === 'Abyssal' ? 'Can I Idle Into the Abyss?' : 'Can I Idle Melvor?' }}</h1>
+    <h4 class="text-white text-center my-3">Up to date as of v1.3.1</h4>
+
+    <!-- Realm / Expansion Selector -->
+    <div class="text-center my-3 realmToggleGroup">
+      <div class="btn-group" role="group" aria-label="Realm Selector">
+        <button id="realmMelvorBtn" type="button" class="btn"
+          :class="realm === 'Melvor' ? 'btn-success' : 'btn-secondary'" @click="realm = 'Melvor'">
+          Base Game + TotH + AoD (Melvor Realm)
+        </button>
+        <button id="realmAbyssalBtn" type="button" class="btn"
+          :class="realm === 'Abyssal' ? 'btn-info' : 'btn-secondary'" @click="realm = 'Abyssal'">
+          Into the Abyss (Abyssal Realm)
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center my-3">
       <button id="copyLink" type="button" class="btn btn-secondary" @click="getShareURL()">Copy shareable link to
         Clipboard</button>
     </p>
@@ -58,11 +73,11 @@
         </div>
         <div class="col-lg-3 col-md-4 col-sm-6 my-2">
           <div class="input-group" data-toggle="tooltip" data-placement="bottom"
-            title="Current out of combat Damage Reduction %">
+            :title="realm === 'Abyssal' ? 'Current out of combat Abyssal Resistance %' : 'Current out of combat Damage Reduction %'">
             <div class="input-group-prepend">
-              <label class="input-group-text" for="currentDR">Current DR%</label>
+              <label class="input-group-text" for="currentDR">{{ currentResistanceLabel }}</label>
             </div>
-            <input id="currentDR" type="number" class="form-control" min="0" max="87" value="0" v-model="currentDR" />
+            <input id="currentDR" type="number" class="form-control" min="0" max="95" value="0" v-model="currentDR" />
           </div>
         </div>
         <div class="col-lg-3 col-md-4 col-sm-12 my-2">
@@ -98,6 +113,7 @@
               <option>Normal</option>
               <option>Hardcore</option>
               <option>Adventure</option>
+              <option>Ancient Relics</option>
               <option>Internal Suffering</option>
             </select>
           </div>
@@ -154,7 +170,7 @@
         </div>
         <div class="col-md-6 col-xs-12 my-2">
           <div class="input-group" data-toggle="tooltip" data-placement="bottom"
-            title="Enables or disables enemy stun/sleep damage">
+            title="Enables or disables enemy stun/sleep/crystallize damage multipliers">
             <div class="input-group-prepend">
               <label class="input-group-text" for="stunDamage">Status Damage</label>
             </div>
@@ -165,12 +181,39 @@
             </select>
           </div>
         </div>
-        <div class="col-lg-3 col-md-4 col-sm-6 my-2">
+        <div class="col-md-6 col-xs-12 my-2">
+          <div class="input-group" data-toggle="tooltip" data-placement="bottom"
+            title="Cartography Dark Waters POI modifier (+5% or +10% Auto-Eat threshold)">
+            <div class="input-group-prepend">
+              <label class="input-group-text" for="darkWatersPOI">Dark Waters POI</label>
+            </div>
+            <select id="darkWatersPOI" class="custom-select" v-model="darkWatersPOI"
+              :class="{selected : darkWatersPOI !== 'None (0%)'}">
+              <option>None (0%)</option>
+              <option>Active (+5%)</option>
+              <option>Doubled (+10%)</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6 col-xs-12 my-2">
+          <div class="input-group" data-toggle="tooltip" data-placement="bottom"
+            title="Negates the Crystal Sanction / Crystallized damage multiplier when wearing (C) gear">
+            <div class="input-group-prepend">
+              <label class="input-group-text" for="crystalSanctionProtection">Crystal Sanction Immunity</label>
+            </div>
+            <select id="crystalSanctionProtection" class="custom-select" v-model="crystalSanctionProtection"
+              :class="{selected : crystalSanctionProtection == 'Yes'}">
+              <option>Yes</option>
+              <option selected>No</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 col-sm-6 my-2">
           <div class="input-group" data-toggle="tooltip" data-placement="bottom" title="Total Slayer Area Negation">
             <div class="input-group-prepend">
               <label class="input-group-text" for="slayerAreaNegation">Slayer Area Negation</label>
             </div>
-            <input id="slayerAreaNegation" type="number" class="form-control" min="0" value="100" step="5"
+            <input id="slayerAreaNegation" type="number" class="form-control" min="0" value="0" step="5"
               v-model="slayerAreaNegation" />
           </div>
         </div>
@@ -198,6 +241,11 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#strongholds">
+            <h3 class="mb-0">Strongholds</h3>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" data-toggle="tab" href="#slayer">
             <h3 class="mb-0">Slayer</h3>
           </a>
@@ -217,13 +265,13 @@
                 <th class="align-middle text-center" style="width: 20%" scope="col">Dungeon Name</th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total DR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>DR% Needed</u>
+                    title="Total DR%/AR% you need equipped to safely idle this dungeon with your currently set HP">
+                    <u>{{ neededResistanceLabel }}</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total HP you need to safely idle this monster with your currently set DR%">
+                    title="Total HP you need to safely idle this dungeon with your currently set DR%/AR%">
                     <u>HP Needed</u>
                   </div>
                 </th>
@@ -231,11 +279,40 @@
             </thead>
             <tbody>
               <tr
-                v-for="calculatedDungeon in this.dungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
+                v-for="calculatedDungeon in activeDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
                 :class="{idleable : calculatedDungeon.isIdleable}">
                 <td class="text-center">{{calculatedDungeon.name}}</td>
-                <td class="text-center">{{calculatedDungeon.minimumDR}} DR% for {{totalHealth}} HP</td>
-                <td class="text-center">{{calculatedDungeon.minimumHP}} HP for {{currentDR}} DR%</td>
+                <td class="text-center">{{formatDRCell(calculatedDungeon.minimumDR)}}</td>
+                <td class="text-center">{{calculatedDungeon.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <table id='strongholdOverview'
+            class="table table-responsive-md table-striped table-dark table-bordered table-hover">
+            <thead>
+              <tr>
+                <th class="align-middle text-center" style="width: 20%" scope="col">Stronghold Name ({{strongholdTier}})</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">
+                  <div data-toggle="tooltip" data-placement="top"
+                    title="Strongholds deal Pure Damage which ignores Player DR% and AR%">
+                    <u>{{ neededResistanceLabel }}</u>
+                  </div>
+                </th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">
+                  <div data-toggle="tooltip" data-placement="top"
+                    title="Total HP you need to safely idle this stronghold at the selected tier">
+                    <u>HP Needed</u>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="calculatedStronghold in activeStrongholds.map(function (sh){ return calculateStrongholdInstance(sh, strongholdTier); })"
+                :class="{idleable : calculatedStronghold.isIdleable}">
+                <td class="text-center">{{calculatedStronghold.name}} ({{strongholdTier}})</td>
+                <td class="text-center">{{formatDRCell(calculatedStronghold.minimumDR)}}</td>
+                <td class="text-center">{{calculatedStronghold.minimumHP}} HP</td>
               </tr>
             </tbody>
           </table>
@@ -246,13 +323,13 @@
                 <th class="align-middle text-center" style="width: 20%" scope="col">Slayer Tier</th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total DR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>DR% Needed</u>
+                    title="Total DR%/AR% you need equipped to safely idle this slayer tier with your currently set HP">
+                    <u>{{ neededResistanceLabel }}</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total HP you need to safely idle this monster with your currently set DR%">
+                    title="Total HP you need to safely idle this slayer tier with your currently set DR%/AR%">
                     <u>HP Needed</u>
                   </div>
                 </th>
@@ -260,11 +337,11 @@
             </thead>
             <tbody>
               <tr
-                v-for="calculatedTier in this.slayerTiers.map(function (tier){ return calculateInstance(tier, true); })"
+                v-for="calculatedTier in activeSlayerTiers.map(function (tier){ return calculateInstance(tier, true); })"
                 :class="{idleable : calculatedTier.isIdleable, warning : calculatedTier.name == 'Master'}">
                 <td class="text-center">{{calculatedTier.name}}</td>
-                <td class="text-center">{{calculatedTier.minimumDR}} DR% for {{totalHealth}} HP</td>
-                <td class="text-center">{{calculatedTier.minimumHP}} HP for {{currentDR}} DR%</td>
+                <td class="text-center">{{formatDRCell(calculatedTier.minimumDR)}}</td>
+                <td class="text-center">{{calculatedTier.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
               </tr>
             </tbody>
           </table>
@@ -272,11 +349,11 @@
         <div id="combatAreas" class="tab-pane fade">
           <div class="input-group my-3">
             <div class="input-group-prepend">
-              <label class="input-group-text" for="combatChoice">Dungeon:</label>
+              <label class="input-group-text" for="combatChoice">Combat Area:</label>
             </div>
             <select class="custom-select" id="combatChoice" v-model="combatChoice">
               <option
-                v-for="calculatedCombat in this.combatAreas.map(function (combatArea){ return calculateInstance(combatArea, false); })">
+                v-for="calculatedCombat in activeCombatAreas.map(function (combatArea){ return calculateInstance(combatArea, false); })">
                 {{calculatedCombat.name}}</option>
             </select>
           </div>
@@ -291,34 +368,38 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">Reduced Max hit</th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total DR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>DR% Needed</u>
+                    title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
+                    <u>{{ neededResistanceLabel }}</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total HP you need to safely idle this monster with your currently set DR%">
+                    title="Total HP you need to safely idle this monster with your currently set DR%/AR%">
                     <u>HP Needed</u>
                   </div>
                 </th>
               </tr>
             </thead>
             <tbody>
-              <template v-for="monster in findMonstersForArea('combatAreas', this.combatChoice)">
+              <template v-for="monster in findMonstersForArea('activeCombatAreas', combatChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
                   <td class="text-center">{{monster.name}}
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
-                      title="This mmonster is able to put you to sleep for +20% damage.">
+                      title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
                       title="This monster can stun or freeze you for +30% damage.">
+                    <span v-if="monster.canCrystallize" class="crystalBadge"
+                      title="This monster can inflict Crystallize / Crystal Sanction.">Crystal</span>
+                    <span v-if="monster.hasDoT" class="dotBadge"
+                      :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
                   </td>
                   <td class="text-center">{{monster.attackStyle}}</td>
                   <td class="text-center">{{monster.intimidation}}</td>
                   <td class="text-center"></td>
                   <td class="text-center">{{monster.maxHit}}</td>
                   <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{monster.minimumDR}} DR% for {{totalHealth}} HP</td>
-                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} DR%</td>
+                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
+                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
                 </tr>
                 <tr v-for="attack in monster.attacks" :class="{idleable : attack.isIdleable}">
                   <td class="text-center"></td>
@@ -327,8 +408,8 @@
                   <td class="text-center">{{attack.name}}</td>
                   <td class="text-center">{{attack.maxHit}}</td>
                   <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{attack.minimumDR}} DR% for {{totalHealth}} HP</td>
-                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} DR%</td>
+                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
+                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
                 </tr>
                 <br>
               </template>
@@ -338,11 +419,11 @@
         <div id="slayerAreas" class="tab-pane fade">
           <div class="input-group my-3">
             <div class="input-group-prepend">
-              <label class="input-group-text" for="slayerChoice">Dungeon:</label>
+              <label class="input-group-text" for="slayerChoice">Slayer Area:</label>
             </div>
             <select class="custom-select" id="slayerChoice" v-model="slayerChoice">
               <option
-                v-for="calculatedArea in this.slayerAreas.map(function (slayerArea){ return calculateInstance(slayerArea, false); })">
+                v-for="calculatedArea in activeSlayerAreas.map(function (slayerArea){ return calculateInstance(slayerArea, false); })">
                 {{calculatedArea.name}}</option>
             </select>
           </div>
@@ -357,34 +438,38 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">Reduced Max hit</th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total DR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>DR% Needed</u>
+                    title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
+                    <u>{{ neededResistanceLabel }}</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total HP you need to safely idle this monster with your currently set DR%">
+                    title="Total HP you need to safely idle this monster with your currently set DR%/AR%">
                     <u>HP Needed</u>
                   </div>
                 </th>
               </tr>
             </thead>
             <tbody>
-              <template v-for="monster in findMonstersForArea('slayerAreas', this.slayerChoice)">
+              <template v-for="monster in findMonstersForArea('activeSlayerAreas', slayerChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
                   <td class="text-center">{{monster.name}}
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
                       title="This monster can stun or freeze you for +30% damage.">
+                    <span v-if="monster.canCrystallize" class="crystalBadge"
+                      title="This monster can inflict Crystallize / Crystal Sanction.">Crystal</span>
+                    <span v-if="monster.hasDoT" class="dotBadge"
+                      :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
                   </td>
                   <td class="text-center">{{monster.attackStyle}}</td>
                   <td class="text-center">{{monster.intimidation}}</td>
                   <td class="text-center"></td>
                   <td class="text-center">{{monster.maxHit}}</td>
                   <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{monster.minimumDR}} DR% for {{totalHealth}} HP</td>
-                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} DR%</td>
+                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
+                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
                 </tr>
                 <tr v-for="attack in monster.attacks" :class="{idleable : attack.isIdleable}">
                   <td class="text-center"></td>
@@ -393,8 +478,8 @@
                   <td class="text-center">{{attack.name}}</td>
                   <td class="text-center">{{attack.maxHit}}</td>
                   <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{attack.minimumDR}} DR% for {{totalHealth}} HP</td>
-                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} DR%</td>
+                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
+                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
                 </tr>
                 <br>
               </template>
@@ -408,7 +493,7 @@
             </div>
             <select class="custom-select" id="dungeonChoice" v-model="dungeonChoice">
               <option
-                v-for="calculatedDungeon in this.dungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })">
+                v-for="calculatedDungeon in activeDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })">
                 {{calculatedDungeon.name}}</option>
             </select>
           </div>
@@ -423,34 +508,38 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">Reduced Max hit</th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total DR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>DR% Needed</u>
+                    title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
+                    <u>{{ neededResistanceLabel }}</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total HP you need to safely idle this monster with your currently set DR%">
+                    title="Total HP you need to safely idle this monster with your currently set DR%/AR%">
                     <u>HP Needed</u>
                   </div>
                 </th>
               </tr>
             </thead>
             <tbody>
-              <template v-for="monster in findMonstersForArea('dungeons', this.dungeonChoice)">
+              <template v-for="monster in findMonstersForArea('activeDungeons', dungeonChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
                   <td class="text-center">{{monster.name}}
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
                       title="This monster can stun or freeze you for +30% damage.">
+                    <span v-if="monster.canCrystallize" class="crystalBadge"
+                      title="This monster can inflict Crystallize / Crystal Sanction.">Crystal</span>
+                    <span v-if="monster.hasDoT" class="dotBadge"
+                      :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
                   </td>
                   <td class="text-center">{{monster.attackStyle}}</td>
                   <td class="text-center">{{monster.intimidation}}</td>
                   <td class="text-center"></td>
                   <td class="text-center">{{monster.maxHit}}</td>
                   <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{monster.minimumDR}} DR% for {{totalHealth}} HP</td>
-                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} DR%</td>
+                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
+                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
                 </tr>
                 <tr v-for="attack in monster.attacks" :class="{idleable : attack.isIdleable}">
                   <td class="text-center"></td>
@@ -459,8 +548,93 @@
                   <td class="text-center">{{attack.name}}</td>
                   <td class="text-center">{{attack.maxHit}}</td>
                   <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{attack.minimumDR}} DR% for {{totalHealth}} HP</td>
-                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} DR%</td>
+                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
+                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                </tr>
+                <br>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <div id="strongholds" class="tab-pane fade">
+          <div class="row my-3">
+            <div class="col-md-6 my-1">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <label class="input-group-text" for="strongholdChoice">Stronghold:</label>
+                </div>
+                <select class="custom-select" id="strongholdChoice" v-model="strongholdChoice">
+                  <option v-for="sh in activeStrongholds">{{sh.name}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6 my-1">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <label class="input-group-text" for="strongholdTier">Stronghold Tier:</label>
+                </div>
+                <select class="custom-select" id="strongholdTier" v-model="strongholdTier">
+                  <option>Standard</option>
+                  <option>Augmented</option>
+                  <option>Superior</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
+            <thead>
+              <tr>
+                <th class="align-middle text-center" style="width: 20%" scope="col">Monster Name</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Style</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Intimidation</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Attack Name</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Max Hit</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Reduced Max hit</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">
+                  <div data-toggle="tooltip" data-placement="top"
+                    title="Stronghold enemies deal Pure Damage which ignores Player DR% and AR%">
+                    <u>{{ neededResistanceLabel }}</u>
+                  </div>
+                </th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">
+                  <div data-toggle="tooltip" data-placement="top"
+                    title="Total HP you need to safely idle this monster at the selected Stronghold Tier">
+                    <u>HP Needed</u>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="monster in findMonstersForStronghold(strongholdChoice, strongholdTier)">
+                <tr :class="{idleable : monster.isIdleable}">
+                  <td class="text-center">{{monster.name}}
+                    <span class="pureDamageBadge" title="Deals Pure Damage (ignores DR% and AR%)">Pure</span>
+                    <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
+                      title="This monster is able to put you to sleep for +20% damage.">
+                    <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
+                      title="This monster can stun or freeze you for +30% damage.">
+                    <span v-if="monster.canCrystallize" class="crystalBadge"
+                      title="This monster can inflict Crystallize / Crystal Sanction.">Crystal</span>
+                    <span v-if="monster.hasDoT" class="dotBadge"
+                      :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
+                  </td>
+                  <td class="text-center">{{monster.attackStyle}}</td>
+                  <td class="text-center">{{monster.intimidation}}</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">{{monster.maxHit}}</td>
+                  <td class="text-center">{{monster.reducedMaxHit}}</td>
+                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
+                  <td class="text-center">{{monster.minimumHP}} HP</td>
+                </tr>
+                <tr v-for="attack in monster.attacks" :class="{idleable : attack.isIdleable}">
+                  <td class="text-center"></td>
+                  <td class="text-center"></td>
+                  <td class="text-center"></td>
+                  <td class="text-center">{{attack.name}}</td>
+                  <td class="text-center">{{attack.maxHit}}</td>
+                  <td class="text-center">{{attack.reducedMaxHit}}</td>
+                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
+                  <td class="text-center">{{attack.minimumHP}} HP</td>
                 </tr>
                 <br>
               </template>
@@ -475,7 +649,7 @@
             <select class="custom-select" id="slayerTier" v-model="slayerTier">
               <option selected hidden>Choose Tier</option>
               <option
-                v-for="calculatedTier in this.slayerTiers.map(function (tier){ return calculateInstance(tier, true); })">
+                v-for="calculatedTier in activeSlayerTiers.map(function (tier){ return calculateInstance(tier, true); })">
                 {{calculatedTier.name}}</option>
             </select>
           </div>
@@ -490,31 +664,35 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">Reduced Max hit</th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total DR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>DR% Needed</u>
+                    title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
+                    <u>{{ neededResistanceLabel }}</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total HP you need to safely idle this monster with your currently set DR%">
+                    title="Total HP you need to safely idle this monster with your currently set DR%/AR%">
                     <u>HP Needed</u>
                   </div>
                 </th>
               </tr>
             </thead>
             <tbody>
-              <template v-for="monster in findMonstersForArea('slayerTiers', this.slayerTier)">
+              <template v-for="monster in findMonstersForArea('activeSlayerTiers', slayerTier, true)">
                 <tr
-                  :class="{idleable :  monster.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
+                  :class="{idleable : monster.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
                   <td class="text-center">{{monster.name}}
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
                       title="This monster can stun or freeze you for +30% damage.">
+                    <span v-if="monster.canCrystallize" class="crystalBadge"
+                      title="This monster can inflict Crystallize / Crystal Sanction.">Crystal</span>
+                    <span v-if="monster.hasDoT" class="dotBadge"
+                      :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
                     <img
                       :class="{statusIcon : monster.name === 'Wicked Greater Dragon' , hide : !(monster.name === 'Wicked Greater Dragon')}"
                       src="assets/warning.png"
-                      title="Unable to fully calculate due to modifers such as Slayer's Crossbow and Astrology.">
+                      title="Unable to fully calculate due to modifiers such as Slayer's Crossbow and Astrology.">
                     <img
                       :class="{statusIcon : (monster.name == 'Greater Skeletal Dragon') , hide : !(monster.name == 'Greater Skeletal Dragon')}"
                       src="assets/warning.png" title="Unable to determine with certainty due to affliction.">
@@ -524,8 +702,8 @@
                   <td class="text-center"></td>
                   <td class="text-center">{{monster.maxHit}}</td>
                   <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{monster.minimumDR}} DR% for {{totalHealth}} HP</td>
-                  <td class="text-center">{{monster.minimumHP}} for {{currentDR}} DR%</td>
+                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
+                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
                 </tr>
                 <tr v-for="attack in monster.attacks"
                   :class="{idleable : attack.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
@@ -535,8 +713,8 @@
                   <td class="text-center">{{attack.name}}</td>
                   <td class="text-center">{{attack.maxHit}}</td>
                   <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{attack.minimumDR}} DR% for {{totalHealth}} HP</td>
-                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} DR%</td>
+                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
+                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
                 </tr>
                 <br>
               </template>
@@ -555,13 +733,13 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">Reduced Max hit</th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total DR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>DR% Needed</u>
+                    title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
+                    <u>{{ neededResistanceLabel }}</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
-                    title="Total HP you need to safely idle this monster with your currently set DR%">
+                    title="Total HP you need to safely idle this monster with your currently set DR%/AR%">
                     <u>HP Needed</u>
                   </div>
                 </th>
@@ -570,16 +748,22 @@
             <tbody>
               <template v-for="monster in findMonstersforEverything()">
                 <tr
-                  :class="{idleable :  monster.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
+                  :class="{idleable : monster.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
                   <td class="text-center">{{monster.name}}
+                    <span v-if="monster.damageType === 'melvorD:Pure'" class="pureDamageBadge"
+                      title="Deals Pure Damage (ignores DR% and AR%)">Pure</span>
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
                       title="This monster can stun or freeze you for +30% damage.">
+                    <span v-if="monster.canCrystallize" class="crystalBadge"
+                      title="This monster can inflict Crystallize / Crystal Sanction.">Crystal</span>
+                    <span v-if="monster.hasDoT" class="dotBadge"
+                      :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
                     <img
                       :class="{statusIcon : monster.name === 'Wicked Greater Dragon' , hide : !(monster.name === 'Wicked Greater Dragon')}"
                       src="assets/warning.png"
-                      title="Unable to fully calculate due to modifers such as slayer crossbow and astrology.">
+                      title="Unable to fully calculate due to modifiers such as slayer crossbow and astrology.">
                     <img
                       :class="{statusIcon : (monster.name == 'Greater Skeletal Dragon') , hide : !(monster.name == 'Greater Skeletal Dragon')}"
                       src="assets/warning.png" title="Unable to determine with certainty due to affliction.">
@@ -589,7 +773,7 @@
                   <td class="text-center"></td>
                   <td class="text-center">{{monster.maxHit}}</td>
                   <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{monster.minimumDR}} DR% for {{totalHealth}} HP</td>
+                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
                   <td class="text-center">{{monster.minimumHP}}</td>
                 </tr>
                 <tr v-for="attack in monster.attacks"
@@ -600,7 +784,7 @@
                   <td class="text-center">{{attack.name}}</td>
                   <td class="text-center">{{attack.maxHit}}</td>
                   <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{attack.minimumDR}} DR% for {{totalHealth}} HP</td>
+                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
                   <td class="text-center">{{attack.minimumHP}}</td>
                 </tr>
                 <br>
@@ -611,31 +795,37 @@
       </div>
     </div>
   </div>
-  <div class="text-white text-center my-1 mx-auto">
-    <h1>DR is always input and displayed as before triangle bonuses. Make sure you double check which value you use.
-    </h1>
-    <h1>Check DR in the stats window (NOT the equipment page pop-up, as this <i>only</i> accounts for equipment
-      bonuses).</h1>
-    <h1>Make sure to check DR when out of combat to minimise triangle interference.</h1>
+  <div id="footerCredits" class="text-white text-center my-4 mx-auto container">
+    <h3>DR% / AR% is always input and displayed before Combat Triangle bonuses. Make sure you double-check which value you use.</h3>
+    <h4>Check DR% / AR% in the combat stats window (NOT the equipment page pop-up, as this <i>only</i> accounts for equipment bonuses).</h4>
+    <h4>Make sure to check DR% / AR% when out of combat to minimise triangle interference.</h4>
 
-    <br>
-    <h5>For any issues please message me (Zxv#0157) on Discord as that's the most reliable way to contact me. Can also
-      submit a <a href="https://github.com/zxv975/CanIIdle">GitHub ticket</a>, although I am less likely to notice that
-      in a timely manner.</h5>
-    <br>
-    <h3>This site is a continuation of a long-standing Melvor community project.</h3>
-    <br>
-    <h4>The original site was created by Dr BoomTown, which was then further developed by Sublimed Disciple, updated and
-      modernised by Silberdrachi, then was finally updated to be compatible with the Throne of the Herald expansion and
-      is
-      currently maintained by Zxv (me).</h4>
-    <br>
+    <hr class="my-4">
+    <h3>Credits &amp; Attribution</h3>
+    <p class="lead">
+      This site is a continuation of a long-standing Melvor Idle community project, forked from
+      <a href="https://github.com/zxv975/CanIIdle"><u>zxv975/CanIIdle</u></a> and maintained at
+      <a href="https://github.com/BrushWild/CanIIdle"><u>BrushWild/CanIIdle</u></a>.
+    </p>
+    <p>
+      The original calculator was created by <strong>Dr BoomTown</strong>, further developed by <strong>Sublimed Disciple</strong>,
+      updated and modernised by <strong>Silberdrachi</strong>, and updated for the <em>Throne of the Herald</em> (v1.1) expansion by
+      <strong>Zxv</strong> (<a href="https://github.com/zxv975/CanIIdle"><u>zxv975/CanIIdle</u></a>).
+    </p>
     <h5><a href="https://drboomtown.github.io/">Can I Idle This? (by Dr BoomTown)</a></h5>
     <h5><a href="https://sublimedisciple.github.io/idle-slayer.html">Can I Idle This? (by Sublimed Disciple)</a></h5>
     <h5><a href="https://silberdrachi.github.io/CanIIdle/">Can I Idle Melvor? (by Silberdrachi)</a></h5>
+    <h5><a href="https://github.com/zxv975/CanIIdle">Can I Idle Throne of the Herald? (by Zxv - zxv975/CanIIdle)</a></h5>
+
+    <hr class="my-3">
+    <h4>AI Coding Tool Disclosure</h4>
+    <p>
+      The Melvor Idle <strong>v1.3.1</strong> expansion updates (Base Game Strongholds, <em>Atlas of Discovery</em> v1.2, and
+      <em>Into the Abyss</em> v1.3.1), automated CDN data extraction scripts (<code>scripts/build-data.mjs</code>), and combat
+      calculation engine refactoring were developed with the assistance of AI coding tools.
+    </p>
     <br>
     <p>"Melvor Idle" is a trademark of Games by Malcs Pty Ltd and is used with the permission of Games by Malcs.</p>
-  </div>
   </div>
 </body>
 
@@ -651,6 +841,8 @@
 <script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/slayerTaskData.js"></script>
 <script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/monsterData.js"></script>
 <script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/slayerAreaData.js"></script>
+<script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/strongholdData.js"></script>
+<script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/abyssalData.js"></script>
 
 <script type="module">
   import { dungeonData } from "./DataImportTools/Exported_Data/Exported_Data_TotH/dungeonData.js"
@@ -658,10 +850,20 @@
   import { slayerAreaData } from "./DataImportTools/Exported_Data/Exported_Data_TotH/slayerAreaData.js"
   import { slayerTaskData } from "./DataImportTools/Exported_Data/Exported_Data_TotH/slayerTaskData.js"
   import { monsterData } from "./DataImportTools/Exported_Data/Exported_Data_TotH/monsterData.js"
+  import { strongholdData } from "./DataImportTools/Exported_Data/Exported_Data_TotH/strongholdData.js"
+  import {
+    abyssCombatAreaData,
+    abyssSlayerAreaData,
+    abyssDungeonData,
+    abyssStrongholdData,
+    abyssSlayerTaskData
+  } from "./DataImportTools/Exported_Data/Exported_Data_TotH/abyssalData.js"
+
   let app = new Vue({
     el: '#app',
     data() {
       return {
+        realm: "Melvor",
         totalHealth: 100,
         currentDR: 0,
         autoEatLevel: "1",
@@ -671,16 +873,26 @@
         wastefulRing: "No",
         guardianAmulet: "No",
         stunDamage: "Yes",
+        darkWatersPOI: "None (0%)",
+        crystalSanctionProtection: "No",
+        strongholdTier: "Standard",
         dungeonChoice: "Chicken Coop",
-        combatChoice: "Golbin Village",
+        combatChoice: "Farmlands",
         slayerChoice: "Penumbra",
+        strongholdChoice: "Stronghold of the Undead",
         slayerTier: "Easy",
         slayerAreaNegation: 0,
         dungeons: dungeonData,
         monsters: monsterData,
         slayerTiers: slayerTaskData,
         slayerAreas: slayerAreaData,
-        combatAreas: combatAreaData
+        combatAreas: combatAreaData,
+        strongholds: strongholdData,
+        abyssDungeons: abyssDungeonData,
+        abyssSlayerTiers: abyssSlayerTaskData,
+        abyssSlayerAreas: abyssSlayerAreaData,
+        abyssCombatAreas: abyssCombatAreaData,
+        abyssStrongholds: abyssStrongholdData,
       };
     },
 
@@ -694,41 +906,64 @@
             return 1;
           case "Magic":
             return 2;
+          default:
+            return 0;
         }
+      },
+
+      formatDRCell(minimumDR) {
+        if (minimumDR === "N/A (Pure)") {
+          return "N/A (Pure)";
+        }
+        return `${minimumDR} ${this.resistanceUnit} for ${this.totalHealth} HP`;
       },
 
       // Share URL
       getShareURL() {
-        navigator.clipboard.writeText(window.location.protocol + "//" + window.location.hostname + window.location.pathname + "?" + "totalHealth=" + this.totalHealth +
-          "&" + "currentDR=" + this.currentDR + "&" + "autoEatLevel=" + this.autoEatLevel + "&" + "combatStyle=" + this.combatStyle + "&" + "gameMode=" + this.gameMode +
-          "&" + "yakSynergy=" + this.yakSynergy + "&" + "wastefulRing=" + this.wastefulRing + "&" + "guardianAmulet=" + this.guardianAmulet + "&" + "stunDamage=" + this.stunDamage)
+        const params = new URLSearchParams({
+          totalHealth: this.totalHealth,
+          currentDR: this.currentDR,
+          autoEatLevel: this.autoEatLevel,
+          combatStyle: this.combatStyle,
+          gameMode: this.gameMode,
+          yakSynergy: this.yakSynergy,
+          wastefulRing: this.wastefulRing,
+          guardianAmulet: this.guardianAmulet,
+          stunDamage: this.stunDamage,
+          realm: this.realm,
+          darkWatersPOI: this.darkWatersPOI,
+          crystalSanctionProtection: this.crystalSanctionProtection,
+          strongholdTier: this.strongholdTier,
+          slayerAreaNegation: this.slayerAreaNegation,
+        });
+        const shareUrl = `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}${window.location.pathname}?${params.toString()}`;
+        navigator.clipboard.writeText(shareUrl)
           .catch(err => {
             alert('Error in copying text: ', err);
           });
       },
 
-      // Monster Calculations
-      calculateMonsterMaxAttack(monster) {
-
-        let maxNormalAttack = this.calculateNormalAttack(monster);
-        let maxSpecialAttack = 0;
-
-        monster.specialAttack.forEach(attack => {
-          let currentSpecialAttack = 0;
-          if (specialAttack.name === "Savage Spike") {
-            currentSpecialAttack = this.calculateSpecialAttack((attack.maxHit + 18), monster.canStun, monster.canSleep, monster.areas);
-          } else {
-            currentSpecialAttack = this.calculateSpecialAttack(attack.maxHit, monster.canStun, monster.canSleep, monster.areas);
+      getStatusMultiplier(monster) {
+        let multiplier = 1;
+        if (this.stunDamage == "Yes") {
+          const hasUnprotectedCrystal = monster.canCrystallize && this.crystalSanctionProtection !== "Yes";
+          if (monster.canStun || hasUnprotectedCrystal) {
+            multiplier = 1.3;
           }
-          if (currentSpecialAttack > maxSpecialAttack) {
-            maxSpecialAttack = currentSpecialAttack;
+          else if (monster.canSleep) {
+            multiplier = 1.2;
+            if (monster.areas && monster.areas.includes("Foggy Lake")) {
+              multiplier += 1.5 - Math.min(150, this.slayerAreaNegation) / 100;
+            }
           }
-        });
-
-        return Math.max(maxNormalAttack, maxSpecialAttack);
+        }
+        return multiplier;
       },
 
-      calculateYakDRModifier(monsterAttackStyle, isSlayer) {
+      calculateYakDRModifier(monsterAttackStyle, isSlayer, damageType) {
+        if (damageType === "melvorD:Pure" || damageType === "melvorItA:Abyssal") {
+          return 0;
+        }
         let ret = 0;
 
         if ((this.yakSynergy == "Minotaur" && monsterAttackStyle == "Ranged")
@@ -743,24 +978,45 @@
         return ret;
       },
 
-      calculateMinimumDR(attackStyle, attack, intimidation) {
-        return Math.max(0, Math.min(100, Math.ceil(Math.ceil(100 - this.totalHealth / attack * (100 * this.autoEatThreshold)) / this.combatTriangle[this.getCombatStyle(this.combatStyle)][this.getCombatStyle(attackStyle)])) + intimidation);
+      calculateMinimumDR(attackStyle, attack, intimidation, damageType = "melvorD:Normal") {
+        if (damageType === "melvorD:Pure") {
+          return "N/A (Pure)";
+        }
+        if (attack <= 0) {
+          return 0;
+        }
+        const playerStyleIdx = this.getCombatStyle(this.combatStyle);
+        const enemyStyleIdx = this.getCombatStyle(attackStyle);
+        const triangleMult = this.combatTriangle[playerStyleIdx][enemyStyleIdx];
+        return Math.max(0, Math.min(100, Math.ceil(Math.ceil(100 - this.totalHealth / attack * (100 * this.autoEatThreshold)) / triangleMult)) + intimidation);
       },
 
-      calculateMinimumHP(attackStyle, attack, isSlayer, intimidation) {
+      calculateMinimumHP(attackStyle, attack, isSlayer, intimidation, damageType = "melvorD:Normal") {
+        if (damageType === "melvorD:Pure") {
+          return Math.max(100, Math.ceil(attack / this.autoEatThreshold / 10) * 10);
+        }
+        const playerStyleIdx = this.getCombatStyle(this.combatStyle);
+        const enemyStyleIdx = this.getCombatStyle(attackStyle);
+        const triangleMult = this.combatTriangle[playerStyleIdx][enemyStyleIdx];
         let intimidatedDR = parseInt(this.currentDR) - intimidation;
-        let yakAdjustedDr = parseInt(intimidatedDR) + parseInt(this.calculateYakDRModifier(attackStyle, isSlayer));
-        return Math.max(100, Math.ceil((attack - Math.floor(attack * (Math.floor(yakAdjustedDr * this.combatTriangle[this.getCombatStyle(this.combatStyle)][this.getCombatStyle(attackStyle)])) / 100)) / this.autoEatThreshold / 10) * 10);
+        let yakAdjustedDr = parseInt(intimidatedDR) + parseInt(this.calculateYakDRModifier(attackStyle, isSlayer, damageType));
+        return Math.max(100, Math.ceil((attack - Math.floor(attack * (Math.floor(yakAdjustedDr * triangleMult)) / 100)) / this.autoEatThreshold / 10) * 10);
       },
 
-      calculateReducedMaxHit(attackStyle, attack, isSlayer, intimidation) {
+      calculateReducedMaxHit(attackStyle, attack, isSlayer, intimidation, damageType = "melvorD:Normal") {
+        if (damageType === "melvorD:Pure") {
+          return attack;
+        }
+        const playerStyleIdx = this.getCombatStyle(this.combatStyle);
+        const enemyStyleIdx = this.getCombatStyle(attackStyle);
+        const triangleMult = this.combatTriangle[playerStyleIdx][enemyStyleIdx];
         let intimidatedDR = parseInt(this.currentDR) - intimidation;
-        let yakAdjustedDr = parseInt(intimidatedDR) + parseInt(this.calculateYakDRModifier(attackStyle, isSlayer));
-        let combatAdjustedDr = Math.floor(yakAdjustedDr * this.combatTriangle[this.getCombatStyle(this.combatStyle)][this.getCombatStyle(attackStyle)]);
+        let yakAdjustedDr = parseInt(intimidatedDR) + parseInt(this.calculateYakDRModifier(attackStyle, isSlayer, damageType));
+        let combatAdjustedDr = Math.floor(yakAdjustedDr * triangleMult);
         let attackReduction = attack * (Math.min(100, combatAdjustedDr) / 100);
         let reducedHit = Math.floor(attack - attackReduction);
-        if (this.guardianAmulet == "Yes" && reducedHit <= this.totalHealth * .5 && reducedHit >= this.totalHealth * this.autoEatThreshold) {
-          reducedHit = Math.floor(attack - attack * (Math.floor((parseInt(yakAdjustedDr) + 5) * this.combatTriangle[this.getCombatStyle(this.combatStyle)][this.getCombatStyle(attackStyle)])) / 100);
+        if (damageType !== "melvorItA:Abyssal" && this.guardianAmulet == "Yes" && reducedHit <= this.totalHealth * .5 && reducedHit >= this.totalHealth * this.autoEatThreshold) {
+          reducedHit = Math.floor(attack - attack * (Math.floor((parseInt(yakAdjustedDr) + 5) * triangleMult)) / 100);
         }
         return reducedHit;
       },
@@ -769,50 +1025,32 @@
         return attack <= (this.totalHealth * this.autoEatThreshold);
       },
 
-      calculateNormalAttack(monster) {
+      calculateBaseNormalAttackRaw(monster) {
         let maximumNormalAttack = 0;
-        if (monster.attackStyle === "Melee") {
-          let effectiveAttackLevel = monster.attackLevel + 9;
-          maximumNormalAttack = Math.floor(this.numberMultiplier * (1.3 + effectiveAttackLevel / 10 + monster.attackBonus / 80 + effectiveAttackLevel * monster.attackBonus / 640));
-        }
-        else if (monster.attackStyle === "Ranged") {
+        if (monster.attackStyle === "Melee" || monster.attackStyle === "Ranged") {
           let effectiveAttackLevel = monster.attackLevel + 9;
           maximumNormalAttack = Math.floor(this.numberMultiplier * (1.3 + effectiveAttackLevel / 10 + monster.attackBonus / 80 + effectiveAttackLevel * monster.attackBonus / 640));
         }
         else if (monster.attackStyle === "Magic") {
-          maximumNormalAttack = Math.floor(this.numberMultiplier * monster.spellMaxHit * (1 + monster.attackBonus / 100) * (1 + (monster.attackLevel + 1) / 200));
-        }
-
-        let multiplier = 1;
-        if (this.stunDamage == "Yes") {
-          if (monster.canStun) {
-            multiplier = 1.3;
-          }
-          else if (monster.canSleep) {
-            multiplier = 1.2
-            if (monster.areas.includes("Foggy Lake"))
-              multiplier += 1.5 - Math.min(150, this.slayerAreaNegation) / 100
+          if (monster.spellMaxHit !== undefined) {
+            maximumNormalAttack = Math.floor(this.numberMultiplier * monster.spellMaxHit * (1 + monster.attackBonus / 100) * (1 + (monster.attackLevel + 1) / 200));
+          } else {
+            let effectiveAttackLevel = monster.attackLevel + 9;
+            maximumNormalAttack = Math.floor(this.numberMultiplier * (1.3 + effectiveAttackLevel / 10 + monster.attackBonus / 80 + effectiveAttackLevel * monster.attackBonus / 640));
           }
         }
+        return maximumNormalAttack;
+      },
 
+      calculateNormalAttack(monster, strongholdMultiplier = 1) {
+        let maximumNormalAttack = Math.floor(this.calculateBaseNormalAttackRaw(monster) * strongholdMultiplier);
+        let multiplier = this.getStatusMultiplier(monster);
         return Math.floor(maximumNormalAttack * multiplier);
       },
 
-      calculateSpecialAttack(specialAttack, canStun, canSleep, areas) {
-        let baseDamage = specialAttack * this.numberMultiplier;
-
-        let multiplier = 1;
-        if (this.stunDamage == "Yes") {
-          if (canStun) {
-            multiplier = 1.3;
-          }
-          else if (canSleep) {
-            multiplier = 1.2;
-            if (areas.includes("Foggy Lake"))
-              multiplier += 1.5 - Math.min(150, this.slayerAreaNegation) / 100
-          }
-        }
-
+      calculateSpecialAttack(specialAttack, monster, strongholdMultiplier = 1) {
+        let baseDamage = Math.floor(specialAttack * this.numberMultiplier * strongholdMultiplier);
+        let multiplier = this.getStatusMultiplier(monster);
         return Math.floor(baseDamage * multiplier);
       },
 
@@ -829,7 +1067,9 @@
         instanceMonsters.forEach(monster => {
           let monsterInformation = this.calculateMonster(monster, isSlayer);
 
-          if (monsterInformation.minimumDR > instanceInformation.minimumDR) {
+          if (monsterInformation.minimumDR === "N/A (Pure)") {
+            instanceInformation.minimumDR = "N/A (Pure)";
+          } else if (instanceInformation.minimumDR !== "N/A (Pure)" && monsterInformation.minimumDR > instanceInformation.minimumDR) {
             instanceInformation.minimumDR = monsterInformation.minimumDR;
           }
 
@@ -844,11 +1084,43 @@
         return instanceInformation;
       },
 
+      calculateStrongholdInstance(stronghold, tierName = "Standard") {
+        const tierInfo = stronghold.tiers?.[tierName] || { damageMultiplier: 1 };
+        const shMult = tierInfo.damageMultiplier;
+        let instanceMonsters = this.monsters.filter(m => stronghold.monsters.includes(m.name));
+
+        let instanceInformation = {
+          name: stronghold.name,
+          minimumDR: "N/A (Pure)",
+          minimumHP: 0,
+          isIdleable: true,
+        };
+        instanceMonsters.forEach(monster => {
+          let monsterInformation = this.calculateMonster(monster, false, {
+            damageTypeOverride: "melvorD:Pure",
+            strongholdMultiplier: shMult,
+          });
+
+          if (monsterInformation.minimumHP > instanceInformation.minimumHP) {
+            instanceInformation.minimumHP = monsterInformation.minimumHP;
+          }
+
+          if (instanceInformation.isIdleable && !monsterInformation.isIdleable) {
+            instanceInformation.isIdleable = false;
+          }
+        });
+        return instanceInformation;
+      },
+
       // Calculate all monster data for display
-      calculateMonster(monster, isSlayer) {
+      calculateMonster(monster, isSlayer, options = {}) {
+        const effectiveDamageType = options.damageTypeOverride || monster.damageType || (this.realm === "Abyssal" ? "melvorItA:Abyssal" : "melvorD:Normal");
+        const strongholdMultiplier = options.strongholdMultiplier !== undefined ? options.strongholdMultiplier : 1;
+        const isPure = effectiveDamageType === "melvorD:Pure";
+
         let monsterInformation = {
           name: monster.name,
-          minimumDR: 0,
+          minimumDR: isPure ? "N/A (Pure)" : 0,
           minimumHP: 0,
           maxHit: 0,
           reducedMaxHit: 0,
@@ -856,9 +1128,13 @@
           attackStyle: monster.attackStyle,
           canSleep: monster.canSleep,
           canStun: monster.canStun,
+          canCrystallize: monster.canCrystallize,
+          hasDoT: monster.hasDoT,
+          dots: monster.dots || [],
+          damageType: effectiveDamageType,
           attackSpeed: monster.attackSpeed,
           attacks: [],
-          intimidation: monster.intimidation,
+          intimidation: isPure ? 0 : monster.intimidation,
           areas: monster.areas,
           id: monster.id
         };
@@ -866,23 +1142,23 @@
         if (monster.usesNormalHit) {
           let attack = {
             name: "Normal Attack",
-            minimumDR: 0,
+            minimumDR: isPure ? "N/A (Pure)" : 0,
             minimumHP: 0,
             isIdleable: true,
             maxHit: 0,
             reducedMaxHit: 0,
           };
 
-          attack.maxHit = this.calculateNormalAttack(monster);
-          attack.reducedMaxHit = this.calculateReducedMaxHit(monster.attackStyle, attack.maxHit, isSlayer, monster.intimidation);
-          attack.minimumDR = this.calculateMinimumDR(monster.attackStyle, attack.maxHit, monster.intimidation);
-          attack.minimumHP = this.calculateMinimumHP(monster.attackStyle, attack.maxHit, isSlayer, monster.intimidation);
+          attack.maxHit = this.calculateNormalAttack(monster, strongholdMultiplier);
+          attack.reducedMaxHit = this.calculateReducedMaxHit(monster.attackStyle, attack.maxHit, isSlayer, monster.intimidation, effectiveDamageType);
+          attack.minimumDR = this.calculateMinimumDR(monster.attackStyle, attack.maxHit, monster.intimidation, effectiveDamageType);
+          attack.minimumHP = this.calculateMinimumHP(monster.attackStyle, attack.maxHit, isSlayer, monster.intimidation, effectiveDamageType);
 
           if (!this.calculateIdleability(attack.reducedMaxHit)) {
             attack.isIdleable = false;
             monsterInformation.isIdleable = false;
           }
-          if (monsterInformation.minimumDR < attack.minimumDR) {
+          if (!isPure && monsterInformation.minimumDR < attack.minimumDR) {
             monsterInformation.minimumDR = attack.minimumDR;
           }
           if (monsterInformation.minimumHP < attack.minimumHP) {
@@ -902,12 +1178,12 @@
           monster.specialAttack.forEach(element => {
             let attack = {
               name: element.name,
-              minimumDR: 0,
+              minimumDR: isPure ? "N/A (Pure)" : 0,
               minimumHP: 0,
               isIdleable: true,
               maxHit: 0,
               reducedMaxHit: 0,
-            }
+            };
 
             let normalHitAttacks = [
               "Volley",
@@ -924,42 +1200,47 @@
               "Fleetness",
             ];
             if (normalHitAttacks.includes(element.name)) {
-              attack.maxHit = this.calculateNormalAttack(monster);
+              attack.maxHit = this.calculateNormalAttack(monster, strongholdMultiplier);
             }
             else if (element.name === "Lesser Sandstorm") {
-              let normalAttack = this.calculateNormalAttack(monster);
-              let adjustedAttack = normalAttack + ((120 * this.numberMultiplier) * .05);
+              let normalAttack = this.calculateNormalAttack(monster, strongholdMultiplier);
+              let adjustedAttack = normalAttack + ((120 * this.numberMultiplier * strongholdMultiplier) * .05);
               attack.maxHit = Math.ceil(adjustedAttack);
             }
             else if (element.name === "Greater Sandstorm") {
-              let adjustedAttack = ((185 * this.numberMultiplier) * .15);
+              let adjustedAttack = ((185 * this.numberMultiplier * strongholdMultiplier) * .15);
               attack.maxHit = Math.ceil(adjustedAttack);
             }
             else if (element.name === "Confusion") {
               attack.maxHit = 0;
             }
             else if (element.name === "Savage Spike") {
-              attack.maxHit = this.calculateSpecialAttack((element.maxHit + 18), monster.canStun, monster.canSleep, monster.areas); // Might need to change this if TotH enemies use Savage Spike
+              attack.maxHit = this.calculateSpecialAttack((element.maxHit + 18), monster, strongholdMultiplier);
             }
             else if (element.name === "Horn Shots") {
-              attack.maxHit = Math.floor(this.calculateNormalAttack(monster) * .6);
+              attack.maxHit = Math.floor(this.calculateNormalAttack(monster, strongholdMultiplier) * .6);
+            }
+            else if (element.crystallizeMultiplier) {
+              const mult = (this.crystalSanctionProtection === "Yes") ? (element.crystallizeMultiplier / 100) : ((element.crystallizeMultiplier * 2) / 100);
+              attack.maxHit = Math.floor(this.calculateNormalAttack(monster, strongholdMultiplier) * mult);
             }
             else { // Standard special attack
-              if (element.fixedAttack)
-                attack.maxHit = this.calculateSpecialAttack(element.maxHit, monster.canStun, monster.canSleep, monster.areas);  // Damage is fixed 
-              else
-                attack.maxHit = Math.floor(this.calculateNormalAttack(monster) * parseInt(element.maxHitMultiplier) / 100) // Damage is based off the base damage of the monster
+              if (element.fixedAttack) {
+                attack.maxHit = this.calculateSpecialAttack(element.maxHit, monster, strongholdMultiplier);
+              } else {
+                attack.maxHit = Math.floor(this.calculateNormalAttack(monster, strongholdMultiplier) * parseInt(element.maxHitMultiplier) / 100);
+              }
             }
 
-            attack.reducedMaxHit = this.calculateReducedMaxHit(monster.attackStyle, attack.maxHit, isSlayer, monster.intimidation);
-            attack.minimumDR = this.calculateMinimumDR(monster.attackStyle, attack.maxHit, monster.intimidation);
-            attack.minimumHP = this.calculateMinimumHP(monster.attackStyle, attack.maxHit, isSlayer, monster.intimidation);
+            attack.reducedMaxHit = this.calculateReducedMaxHit(monster.attackStyle, attack.maxHit, isSlayer, monster.intimidation, effectiveDamageType);
+            attack.minimumDR = this.calculateMinimumDR(monster.attackStyle, attack.maxHit, monster.intimidation, effectiveDamageType);
+            attack.minimumHP = this.calculateMinimumHP(monster.attackStyle, attack.maxHit, isSlayer, monster.intimidation, effectiveDamageType);
 
             if (!this.calculateIdleability(attack.reducedMaxHit)) {
               attack.isIdleable = false;
               monsterInformation.isIdleable = false;
             }
-            if (monsterInformation.minimumDR < attack.minimumDR) {
+            if (!isPure && monsterInformation.minimumDR < attack.minimumDR) {
               monsterInformation.minimumDR = attack.minimumDR;
             }
             if (monsterInformation.minimumHP < attack.minimumHP) {
@@ -972,77 +1253,101 @@
               monsterInformation.reducedMaxHit = attack.reducedMaxHit;
             }
 
-            monsterInformation.attacks.push(attack)
+            monsterInformation.attacks.push(attack);
           });
         }
 
         return monsterInformation;
       },
 
-      // Functions for UI Tables
-      // findMonstersForDungeon(dungeon) {
-      //   let dungeonMonstersNames = this.dungeons.filter(s => s.name == dungeon)[0].monsters;
-      //   let dungeonMonsters = this.monsters.filter(m => dungeonMonstersNames.includes(m.name)).sort((first, second) => dungeonMonstersNames.indexOf(first.name) - dungeonMonstersNames.indexOf(second.name));
-      //   let monsterInformation = [];
-      //   dungeonMonsters.forEach(element => {
-      //     monsterInformation.push(this.calculateMonster(element, false));
-      //   });
-      //   return monsterInformation;
-      // },
-
-      // findMonstersForCombatArea(area) {
-      //   let areaMonstersNames = this.combatAreas.filter(s => s.name == area)[0].monsters;
-      //   let areaMonsters = this.monsters.filter(m => areaMonstersNames.includes(m.name)).sort((first, second) => areaMonstersNames.indexOf(first.name) - areaMonstersNames.indexOf(second.name));
-      //   let monsterInformation = [];
-      //   areaMonsters.forEach(element => {
-      //     monsterInformation.push(this.calculateMonster(element, false));
-      //   });
-      //   return monsterInformation;
-      // },
-
-      // findMonsterForSlayerArea(area) {
-      //   let areaMonstersNames = this.slayerAreas.filter(s => s.name == area)[0].monsters;
-      //   let areaMonsters = this.monsters.filter(m => areaMonstersNames.includes(m.name)).sort((first, second) => areaMonstersNames.indexOf(first.name) - areaMonstersNames.indexOf(second.name));
-      //   let monsterInformation = [];
-      //   areaMonsters.forEach(element => {
-      //     monsterInformation.push(this.calculateMonster(element, false));
-      //   });
-      //   return monsterInformation;
-      // },
-
-      findMonstersForArea(areaName, area) {
-        let areaMonstersNames = this[areaName].filter(s => s.name == area)[0].monsters;
-        let areaMonsters = this.monsters.filter(m => areaMonstersNames.includes(m.name)).sort((first, second) => areaMonstersNames.indexOf(first.name) - areaMonstersNames.indexOf(second.name));
+      findMonstersForArea(areaListProp, areaName, isSlayer = false) {
+        const list = this[areaListProp] || [];
+        const found = list.find(s => s.name == areaName) || list[0];
+        if (!found) return [];
+        let areaMonstersNames = found.monsters;
+        let areaMonsters = this.monsters
+          .filter(m => areaMonstersNames.includes(m.name))
+          .sort((first, second) => areaMonstersNames.indexOf(first.name) - areaMonstersNames.indexOf(second.name));
         let monsterInformation = [];
         areaMonsters.forEach(element => {
-          monsterInformation.push(this.calculateMonster(element, false));
+          monsterInformation.push(this.calculateMonster(element, isSlayer));
         });
         return monsterInformation;
       },
 
-
-      // findMonstersForSlayerTier(tier) {
-      //   let tierMonstersNames = this.slayerTiers.filter(s => s.name == tier)[0].monsters;
-      //   let tierMonsters = this.monsters.filter(m => tierMonstersNames.includes(m.name));
-      //   let monsterInformation = [];
-      //   tierMonsters.forEach(element => {
-      //     monsterInformation.push(this.calculateMonster(element, true));
-      //   });
-      //   return monsterInformation;
-      // },
+      findMonstersForStronghold(strongholdName, tierName) {
+        const list = this.activeStrongholds || [];
+        const found = list.find(s => s.name == strongholdName) || list[0];
+        if (!found) return [];
+        const tierInfo = found.tiers?.[tierName] || { damageMultiplier: 1 };
+        const shMult = tierInfo.damageMultiplier;
+        let shMonsterNames = found.monsters;
+        let shMonsters = this.monsters
+          .filter(m => shMonsterNames.includes(m.name))
+          .sort((first, second) => shMonsterNames.indexOf(first.name) - shMonsterNames.indexOf(second.name));
+        return shMonsters.map(m => this.calculateMonster(m, false, {
+          damageTypeOverride: "melvorD:Pure",
+          strongholdMultiplier: shMult,
+        }));
+      },
 
       findMonstersforEverything() {
         let monsterInformation = [];
-        this.monsters.forEach(element => {
-          monsterInformation.push(this.calculateMonster(element, false));
-        });
+        this.monsters
+          .filter(m => m.realm === this.realm)
+          .forEach(element => {
+            monsterInformation.push(this.calculateMonster(element, false));
+          });
         return monsterInformation;
+      },
+
+      syncChoicesWithRealm() {
+        if (!this.activeCombatAreas.some(a => a.name === this.combatChoice)) {
+          this.combatChoice = this.activeCombatAreas[0]?.name || "";
+        }
+        if (!this.activeSlayerAreas.some(a => a.name === this.slayerChoice)) {
+          this.slayerChoice = this.activeSlayerAreas[0]?.name || "";
+        }
+        if (!this.activeDungeons.some(a => a.name === this.dungeonChoice)) {
+          this.dungeonChoice = this.activeDungeons[0]?.name || "";
+        }
+        if (!this.activeStrongholds.some(a => a.name === this.strongholdChoice)) {
+          this.strongholdChoice = this.activeStrongholds[0]?.name || "";
+        }
+        if (!this.activeSlayerTiers.some(a => a.name === this.slayerTier)) {
+          this.slayerTier = this.activeSlayerTiers[0]?.name || "";
+        }
       },
     },
     computed: {
+      activeCombatAreas() {
+        return this.realm === "Abyssal" ? this.abyssCombatAreas : this.combatAreas;
+      },
+      activeSlayerAreas() {
+        return this.realm === "Abyssal" ? this.abyssSlayerAreas : this.slayerAreas;
+      },
+      activeDungeons() {
+        return this.realm === "Abyssal" ? this.abyssDungeons : this.dungeons;
+      },
+      activeStrongholds() {
+        return this.realm === "Abyssal" ? this.abyssStrongholds : this.strongholds;
+      },
+      activeSlayerTiers() {
+        return this.realm === "Abyssal" ? this.abyssSlayerTiers : this.slayerTiers;
+      },
+      currentResistanceLabel() {
+        return this.realm === "Abyssal" ? "Current AR%" : "Current DR%";
+      },
+      neededResistanceLabel() {
+        return this.realm === "Abyssal" ? "AR% Needed" : "DR% Needed";
+      },
+      resistanceUnit() {
+        return this.realm === "Abyssal" ? "AR%" : "DR%";
+      },
+
       autoEatThreshold() {
         var aethreshold = 0;
-        switch (this.autoEatLevel) {
+        switch (String(this.autoEatLevel)) {
           case "1":
             aethreshold = 0.2;
             break;
@@ -1058,16 +1363,35 @@
           aethreshold = aethreshold + 0.05;
         }
 
-        return aethreshold;
+        if (this.darkWatersPOI === "Active (+5%)") {
+          aethreshold = aethreshold + 0.05;
+        } else if (this.darkWatersPOI === "Doubled (+10%)") {
+          aethreshold = aethreshold + 0.10;
+        }
+
+        return Number(aethreshold.toFixed(4));
       },
 
       combatTriangle() {
-        if (this.gameMode === "Normal") {
-          return [[1, 1.25, 0.75], [0.95, 1, 1.25], [1.25, 0.85, 1]];
-        } else if (this.gameMode === "Internal Suffering") {
-          return [[1, .75, 1.25], [1.25, 1, .75], [0.5, 1.25, 1]];
-        } else { // GameModes HC/Adventure
-          return [[1, 1.25, 0.5], [0.75, 1, 1.25], [1.25, 0.75, 1]];
+        // Matrix indexed by [PlayerStyle][EnemyStyle] where 0=Melee, 1=Ranged, 2=Magic
+        if (this.realm === "Abyssal") {
+          // Reversed Combat Triangle: Melee -> Magic -> Ranged -> Melee
+          if (this.gameMode === "Normal") {
+            return [[1, 0.95, 1.25], [1.25, 1, 0.85], [0.75, 1.25, 1]];
+          } else if (this.gameMode === "Internal Suffering") {
+            return [[1, 1.25, 0.5], [0.75, 1, 1.25], [1.25, 0.75, 1]];
+          } else { // Hardcore, Adventure, Ancient Relics
+            return [[1, 0.75, 1.25], [1.25, 1, 0.75], [0.5, 1.25, 1]];
+          }
+        } else {
+          // Melvor Standard Combat Triangle: Melee -> Ranged -> Magic -> Melee
+          if (this.gameMode === "Normal") {
+            return [[1, 1.25, 0.75], [0.95, 1, 1.25], [1.25, 0.85, 1]];
+          } else if (this.gameMode === "Internal Suffering") {
+            return [[1, .75, 1.25], [1.25, 1, .75], [0.5, 1.25, 1]];
+          } else { // Hardcore, Adventure, Ancient Relics
+            return [[1, 1.25, 0.5], [0.75, 1, 1.25], [1.25, 0.75, 1]];
+          }
         }
       },
 
@@ -1076,8 +1400,7 @@
           return 100;
         } else if (this.gameMode === "Internal Suffering") {
           return 1000;
-        }
-        else {
+        } else {
           return 10;
         }
       },
@@ -1087,10 +1410,10 @@
       if (window.location.search) {
         let params = new URLSearchParams(document.location.search.substring(1));
         if (params.has("totalHealth")) {
-          this.totalHealth = parseInt(params.get("totalHealth"));
+          this.totalHealth = parseInt(params.get("totalHealth")) || 100;
         }
         if (params.has("currentDR")) {
-          this.currentDR = parseInt(params.get("currentDR"));
+          this.currentDR = parseInt(params.get("currentDR")) || 0;
         }
         if (params.has("autoEatLevel")) {
           this.autoEatLevel = params.get("autoEatLevel");
@@ -1113,7 +1436,28 @@
         if (params.has("stunDamage")) {
           this.stunDamage = params.get("stunDamage");
         }
+        if (params.has("realm")) {
+          const r = params.get("realm");
+          if (r === "Melvor" || r === "Abyssal") {
+            this.realm = r;
+          }
+        }
+        if (params.has("darkWatersPOI")) {
+          this.darkWatersPOI = params.get("darkWatersPOI");
+        }
+        if (params.has("crystalSanctionProtection")) {
+          this.crystalSanctionProtection = params.get("crystalSanctionProtection");
+        }
+        if (params.has("strongholdTier")) {
+          this.strongholdTier = params.get("strongholdTier");
+        }
+        if (params.has("slayerAreaNegation")) {
+          this.slayerAreaNegation = parseInt(params.get("slayerAreaNegation")) || 0;
+        }
       } else {
+        if (localStorage.realm) {
+          this.realm = localStorage.realm;
+        }
         if (localStorage.slayerTier) {
           this.slayerTier = localStorage.slayerTier;
         }
@@ -1141,10 +1485,27 @@
         if (localStorage.slayerChoice) {
           this.slayerChoice = localStorage.slayerChoice;
         }
+        if (localStorage.strongholdChoice) {
+          this.strongholdChoice = localStorage.strongholdChoice;
+        }
+        if (localStorage.strongholdTier) {
+          this.strongholdTier = localStorage.strongholdTier;
+        }
+        if (localStorage.darkWatersPOI) {
+          this.darkWatersPOI = localStorage.darkWatersPOI;
+        }
+        if (localStorage.crystalSanctionProtection) {
+          this.crystalSanctionProtection = localStorage.crystalSanctionProtection;
+        }
       }
+      this.syncChoicesWithRealm();
     },
 
     watch: {
+      realm(newRealm) {
+        localStorage.realm = newRealm;
+        this.syncChoicesWithRealm();
+      },
       totalHealth(newTotalHealth) {
         localStorage.totalHealth = newTotalHealth;
       },
@@ -1169,9 +1530,21 @@
       slayerChoice(newSlayerChoice) {
         localStorage.slayerChoice = newSlayerChoice;
       },
+      strongholdChoice(newStrongholdChoice) {
+        localStorage.strongholdChoice = newStrongholdChoice;
+      },
+      strongholdTier(newStrongholdTier) {
+        localStorage.strongholdTier = newStrongholdTier;
+      },
+      darkWatersPOI(newVal) {
+        localStorage.darkWatersPOI = newVal;
+      },
+      crystalSanctionProtection(newVal) {
+        localStorage.crystalSanctionProtection = newVal;
+      },
       slayerTier(newSlayerTier) {
         localStorage.slayerTier = newSlayerTier;
       },
-    }
+    },
   });
 </script>

@@ -71,3 +71,42 @@ tr th div {
 .input-group {
   flex-wrap: nowrap;
 }
+
+.pureDamageBadge {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background-color: #6f42c1;
+  color: #ffffff;
+  margin-left: 4px;
+}
+
+.dotBadge {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background-color: #d9534f;
+  color: #ffffff;
+  margin-left: 4px;
+  cursor: help;
+}
+
+.crystalBadge {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background-color: #17a2b8;
+  color: #ffffff;
+  margin-left: 4px;
+  cursor: help;
+}
+
+.realmToggleGroup .btn {
+  font-weight: 600;
+}
