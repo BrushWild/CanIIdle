@@ -22,7 +22,7 @@
     crossorigin="anonymous"></script>
 
   <!-- Site specific style -->
-  <link rel="stylesheet" href="style.css?v=1.3.1">
+  <link rel="stylesheet" href="style.css?v=1.3.2">
   <style>
     [v-cloak] {
       display: none !important;
@@ -361,17 +361,22 @@
           <div class="input-group my-3">
             <div class="input-group-prepend">
               <label class="input-group-text" for="combatChoice">Combat Area:</label>
-              <span class="input-group-text bg-dark border-secondary">
-                <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeCombatAreas', combatChoice).cssClass" :title="getSelectedExpansion('activeCombatAreas', combatChoice).fullName" v-text="getSelectedExpansion('activeCombatAreas', combatChoice).short"></span>
-              </span>
             </div>
-            <select class="custom-select" id="combatChoice" v-model="combatChoice">
-              <option
-                v-for="calculatedCombat in activeCombatAreas.map(function (combatArea){ return calculateInstance(combatArea, false); })"
-                :value="calculatedCombat.name"
-                :title="calculatedCombat.expansion.fullName"
-                v-text="'[' + calculatedCombat.expansion.short + '] ' + calculatedCombat.name"></option>
-            </select>
+            <div class="dropdown flex-grow-1">
+              <button class="btn customDropdownBtn dropdown-toggle w-100 text-left d-flex justify-content-between align-items-center" type="button" id="combatChoice" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span>
+                  <span class="expansionBadge" :class="getSelectedExpansion('activeCombatAreas', combatChoice).cssClass" :title="getSelectedExpansion('activeCombatAreas', combatChoice).fullName" v-text="getSelectedExpansion('activeCombatAreas', combatChoice).short"></span><span v-text="combatChoice"></span>
+                </span>
+              </button>
+              <div class="dropdown-menu w-100 customDropdownMenu" aria-labelledby="combatChoice">
+                <a class="dropdown-item" href="#"
+                  v-for="calculatedCombat in activeCombatAreas.map(function (combatArea){ return calculateInstance(combatArea, false); })"
+                  :class="{active : combatChoice === calculatedCombat.name}"
+                  @click.prevent="combatChoice = calculatedCombat.name">
+                  <span class="expansionBadge" :class="calculatedCombat.expansion.cssClass" :title="calculatedCombat.expansion.fullName" v-text="calculatedCombat.expansion.short"></span><span v-text="calculatedCombat.name"></span>
+                </a>
+              </div>
+            </div>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
             <thead>
@@ -437,17 +442,22 @@
           <div class="input-group my-3">
             <div class="input-group-prepend">
               <label class="input-group-text" for="slayerChoice">Slayer Area:</label>
-              <span class="input-group-text bg-dark border-secondary">
-                <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeSlayerAreas', slayerChoice).cssClass" :title="getSelectedExpansion('activeSlayerAreas', slayerChoice).fullName" v-text="getSelectedExpansion('activeSlayerAreas', slayerChoice).short"></span>
-              </span>
             </div>
-            <select class="custom-select" id="slayerChoice" v-model="slayerChoice">
-              <option
-                v-for="calculatedArea in activeSlayerAreas.map(function (slayerArea){ return calculateInstance(slayerArea, false); })"
-                :value="calculatedArea.name"
-                :title="calculatedArea.expansion.fullName"
-                v-text="'[' + calculatedArea.expansion.short + '] ' + calculatedArea.name"></option>
-            </select>
+            <div class="dropdown flex-grow-1">
+              <button class="btn customDropdownBtn dropdown-toggle w-100 text-left d-flex justify-content-between align-items-center" type="button" id="slayerChoice" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span>
+                  <span class="expansionBadge" :class="getSelectedExpansion('activeSlayerAreas', slayerChoice).cssClass" :title="getSelectedExpansion('activeSlayerAreas', slayerChoice).fullName" v-text="getSelectedExpansion('activeSlayerAreas', slayerChoice).short"></span><span v-text="slayerChoice"></span>
+                </span>
+              </button>
+              <div class="dropdown-menu w-100 customDropdownMenu" aria-labelledby="slayerChoice">
+                <a class="dropdown-item" href="#"
+                  v-for="calculatedArea in activeSlayerAreas.map(function (slayerArea){ return calculateInstance(slayerArea, false); })"
+                  :class="{active : slayerChoice === calculatedArea.name}"
+                  @click.prevent="slayerChoice = calculatedArea.name">
+                  <span class="expansionBadge" :class="calculatedArea.expansion.cssClass" :title="calculatedArea.expansion.fullName" v-text="calculatedArea.expansion.short"></span><span v-text="calculatedArea.name"></span>
+                </a>
+              </div>
+            </div>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
             <thead>
@@ -513,17 +523,22 @@
           <div class="input-group my-3">
             <div class="input-group-prepend">
               <label class="input-group-text" for="dungeonChoice">Dungeon:</label>
-              <span class="input-group-text bg-dark border-secondary">
-                <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeDungeons', dungeonChoice).cssClass" :title="getSelectedExpansion('activeDungeons', dungeonChoice).fullName" v-text="getSelectedExpansion('activeDungeons', dungeonChoice).short"></span>
-              </span>
             </div>
-            <select class="custom-select" id="dungeonChoice" v-model="dungeonChoice">
-              <option
-                v-for="calculatedDungeon in activeDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
-                :value="calculatedDungeon.name"
-                :title="calculatedDungeon.expansion.fullName"
-                v-text="'[' + calculatedDungeon.expansion.short + '] ' + calculatedDungeon.name"></option>
-            </select>
+            <div class="dropdown flex-grow-1">
+              <button class="btn customDropdownBtn dropdown-toggle w-100 text-left d-flex justify-content-between align-items-center" type="button" id="dungeonChoice" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span>
+                  <span class="expansionBadge" :class="getSelectedExpansion('activeDungeons', dungeonChoice).cssClass" :title="getSelectedExpansion('activeDungeons', dungeonChoice).fullName" v-text="getSelectedExpansion('activeDungeons', dungeonChoice).short"></span><span v-text="dungeonChoice"></span>
+                </span>
+              </button>
+              <div class="dropdown-menu w-100 customDropdownMenu" aria-labelledby="dungeonChoice">
+                <a class="dropdown-item" href="#"
+                  v-for="calculatedDungeon in activeDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
+                  :class="{active : dungeonChoice === calculatedDungeon.name}"
+                  @click.prevent="dungeonChoice = calculatedDungeon.name">
+                  <span class="expansionBadge" :class="calculatedDungeon.expansion.cssClass" :title="calculatedDungeon.expansion.fullName" v-text="calculatedDungeon.expansion.short"></span><span v-text="calculatedDungeon.name"></span>
+                </a>
+              </div>
+            </div>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
             <thead>
@@ -591,13 +606,22 @@
               <div class="input-group">
                 <div class="input-group-prepend">
                   <label class="input-group-text" for="strongholdChoice">Stronghold:</label>
-                  <span class="input-group-text bg-dark border-secondary">
-                    <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeStrongholds', strongholdChoice).cssClass" :title="getSelectedExpansion('activeStrongholds', strongholdChoice).fullName" v-text="getSelectedExpansion('activeStrongholds', strongholdChoice).short"></span>
-                  </span>
                 </div>
-                <select class="custom-select" id="strongholdChoice" v-model="strongholdChoice">
-                  <option v-for="sh in activeStrongholds" :value="sh.name" :title="getExpansionInfo(sh.id).fullName" v-text="'[' + getExpansionInfo(sh.id).short + '] ' + sh.name"></option>
-                </select>
+                <div class="dropdown flex-grow-1">
+                  <button class="btn customDropdownBtn dropdown-toggle w-100 text-left d-flex justify-content-between align-items-center" type="button" id="strongholdChoice" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span>
+                      <span class="expansionBadge" :class="getSelectedExpansion('activeStrongholds', strongholdChoice).cssClass" :title="getSelectedExpansion('activeStrongholds', strongholdChoice).fullName" v-text="getSelectedExpansion('activeStrongholds', strongholdChoice).short"></span><span v-text="strongholdChoice"></span>
+                    </span>
+                  </button>
+                  <div class="dropdown-menu w-100 customDropdownMenu" aria-labelledby="strongholdChoice">
+                    <a class="dropdown-item" href="#"
+                      v-for="sh in activeStrongholds"
+                      :class="{active : strongholdChoice === sh.name}"
+                      @click.prevent="strongholdChoice = sh.name">
+                      <span class="expansionBadge" :class="getExpansionInfo(sh.id).cssClass" :title="getExpansionInfo(sh.id).fullName" v-text="getExpansionInfo(sh.id).short"></span><span v-text="sh.name"></span>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="col-md-6 my-1">
@@ -678,18 +702,22 @@
           <div class="input-group my-3">
             <div class="input-group-prepend">
               <label class="input-group-text" for="slayerTier">Slayer Tier:</label>
-              <span class="input-group-text bg-dark border-secondary">
-                <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeSlayerTiers', slayerTier).cssClass" :title="getSelectedExpansion('activeSlayerTiers', slayerTier).fullName" v-text="getSelectedExpansion('activeSlayerTiers', slayerTier).short"></span>
-              </span>
             </div>
-            <select class="custom-select" id="slayerTier" v-model="slayerTier">
-              <option selected hidden>Choose Tier</option>
-              <option
-                v-for="calculatedTier in activeSlayerTiers.map(function (tier){ return calculateInstance(tier, true); })"
-                :value="calculatedTier.name"
-                :title="calculatedTier.expansion.fullName"
-                v-text="'[' + calculatedTier.expansion.short + '] ' + calculatedTier.name"></option>
-            </select>
+            <div class="dropdown flex-grow-1">
+              <button class="btn customDropdownBtn dropdown-toggle w-100 text-left d-flex justify-content-between align-items-center" type="button" id="slayerTier" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span>
+                  <span class="expansionBadge" :class="getSelectedExpansion('activeSlayerTiers', slayerTier).cssClass" :title="getSelectedExpansion('activeSlayerTiers', slayerTier).fullName" v-text="getSelectedExpansion('activeSlayerTiers', slayerTier).short"></span><span v-text="slayerTier"></span>
+                </span>
+              </button>
+              <div class="dropdown-menu w-100 customDropdownMenu" aria-labelledby="slayerTier">
+                <a class="dropdown-item" href="#"
+                  v-for="calculatedTier in activeSlayerTiers.map(function (tier){ return calculateInstance(tier, true); })"
+                  :class="{active : slayerTier === calculatedTier.name}"
+                  @click.prevent="slayerTier = calculatedTier.name">
+                  <span class="expansionBadge" :class="calculatedTier.expansion.cssClass" :title="calculatedTier.expansion.fullName" v-text="calculatedTier.expansion.short"></span><span v-text="calculatedTier.name"></span>
+                </a>
+              </div>
+            </div>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
             <thead>

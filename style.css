@@ -141,3 +141,40 @@ tr th div {
 .expansion-ItA {
   background-color: #b71c1c;
 }
+
+.customDropdownBtn {
+  background-color: #ffffff;
+  color: #495057;
+  border: 1px solid #ced4da;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.customDropdownBtn:hover,
+.customDropdownBtn:focus {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.customDropdownMenu {
+  max-height: 360px;
+  overflow-y: auto;
+  background-color: #212529;
+  border: 1px solid #454d55;
+}
+
+.customDropdownMenu .dropdown-item {
+  color: #ffffff;
+  padding: 6px 14px;
+}
+
+.customDropdownMenu .dropdown-item:hover,
+.customDropdownMenu .dropdown-item:focus {
+  background-color: #343a40;
+  color: #ffffff;
+}
+
+.customDropdownMenu .dropdown-item.active {
+  background-color: #324E40;
+  color: #ffffff;
+}
