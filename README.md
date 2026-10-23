@@ -29,7 +29,15 @@ Toggle seamlessly at the top of the page between:
   - `Augmented`
   - `Superior`
 
-### 4. Updated Auto-Eat & Status Modifiers
+### 4. Special Dungeons & Events Tab (Formerly Banned Dungeons)
+- Dedicated **Special** tab (plus an Overview summary table) supporting high-tier encounters previously excluded from idle calculators due to active mechanics:
+  - **Into the Mist** (`melvorF:Into_the_Mist`): Evaluates survival against `Mysterious Figure - Phase 1`, `Mysterious Figure - Phase 2`, and `Ahrenia`.
+  - **Impending Darkness Event** (`melvorF:Impending_Darkness`): Evaluates survival against `Bane` and `Bane, Instrument of Fear`, accounting for Bane's *Random* attack style by applying worst-case Combat Triangle protection.
+  - **Throne of the Herald** (`melvorTotH:Throne_of_the_Herald`): Evaluates survival against `The Herald Phase 1`, `The Herald Phase 2`, and `The Herald (Phase 3)` with 44 Intimidation.
+  - **The Abyss - Depth 9 (???)** (`melvorItA:Depth9`): Evaluates survival against secret superbosses `Starfang`, `Voidmaw`, and `Celesterror`.
+- Features encounter-specific disclaimers explaining `pauseOnBosses: true`, multi-style phasing, and interactive draft modifiers.
+
+### 5. Updated Auto-Eat & Status Modifiers
 - **Base Auto-Eat Thresholds**: Tier 1 (`20%`), Tier 2 (`30%`), Tier 3 (`40%`).
 - **Wasteful Ring**: `+5%` Auto-Eat threshold.
 - **Cartography Dark Waters POI (v1.2 AoD)**: Configurable as `None (0%)`, `Active (+5%)`, or `Doubled (+10%)` Auto-Eat threshold.

@@ -116,6 +116,13 @@ function computeBaseNormalMaxHit(monster, spellsMap, numberMultiplier = 10) {
       numberMultiplier * (1.3 + effectiveLevel / 10 + bonus / 80 + (effectiveLevel * bonus) / 640)
     );
   }
+  if (style === 'random') {
+    const effectiveLevel = (levels.Strength || levels.Attack || 1) + 9;
+    const bonus = getStat('meleeStrengthBonus') || getStat('rangedStrengthBonus') || 0;
+    return Math.floor(
+      numberMultiplier * (1.3 + effectiveLevel / 10 + bonus / 80 + (effectiveLevel * bonus) / 640)
+    );
+  }
   return 0;
 }
 
@@ -182,6 +189,7 @@ async function main() {
     'melvorF:TurkulArchers': 'Turkul Archers',
     'melvorF:TurkulThrowers': 'Turkul Throwers',
     'melvorAoD:EarthGolem': 'Earth Golem (AoD)',
+    'melvorTotH:TheHeraldPhase3': 'The Herald (Phase 3)',
   };
 
   function getMonsterDisplayName(fullId) {
@@ -259,6 +267,9 @@ async function main() {
     'melvorF:FierceDevilBoss': 'melvorF:FierceDevil',
     'melvorF:ElementalistBoss': 'melvorF:Elementalist',
     'melvorF:PratTheGuardianOfSecretsBoss': 'melvorF:PratTheGuardianOfSecrets',
+    'melvorF:MysteriousFigurePhase1Stronghold': 'melvorF:MysteriousFigurePhase1',
+    'melvorF:MysteriousFigurePhase2Stronghold': 'melvorF:MysteriousFigurePhase2',
+    'melvorF:AhreniaStronghold': 'melvorF:Ahrenia',
   };
 
   function resolveAreaMonsters(areaId) {
@@ -345,6 +356,41 @@ async function main() {
 
   const abyssStrongholdList = abyssStrongholdIds.map(resolveStrongholdObject);
 
+  const specialDungeonList = [
+    {
+      id: 'melvorF:Into_the_Mist',
+      name: 'Into the Mist',
+      realm: 'Melvor',
+      monsters: ['Mysterious Figure - Phase 1', 'Mysterious Figure - Phase 2', 'Ahrenia'],
+      caveats: 'Combat automatically pauses before each boss phase (pauseOnBosses: true). Spawns 20 random afflicted monsters in waves 1–20. Bosses cycle styles: Phase 1 (Melee), Phase 2 (Ranged), Phase 3 (Magic).'
+    },
+    {
+      id: 'melvorF:Impending_Darkness',
+      name: 'Impending Darkness Event',
+      realm: 'Melvor',
+      monsters: ['Bane', 'Bane, Instrument of Fear'],
+      caveats: 'Interactive combat event across 4 Slayer areas with draftable Slayer curses. Bane attacks with a Random style; calculations apply the worst-case Combat Triangle multiplier against your setup.'
+    },
+    {
+      id: 'melvorTotH:Throne_of_the_Herald',
+      name: 'Throne of the Herald',
+      realm: 'Melvor',
+      monsters: ['The Herald Phase 1', 'The Herald Phase 2', 'The Herald (Phase 3)'],
+      caveats: 'Combat automatically pauses between phases (pauseOnBosses: true). Features 44 Intimidation, sequential tri-style phases (Phase 1 Melee, Phase 2 Ranged, Phase 3 Magic), and execution mechanics.'
+    },
+  ];
+
+  const abyssSpecialDungeonList = [
+    {
+      id: 'melvorItA:Depth9',
+      name: 'The Abyss - Depth 9 (???)',
+      realm: 'Abyssal',
+      monsters: ['Starfang', 'Voidmaw', 'Celesterror'],
+      caveats: 'Secret post-game superboss depth requiring the Eternity Mitt. Deals Eternal Damage and features 10M–14M HP pools using the Reversed Combat Triangle.'
+    },
+  ];
+
+
   // Slayer Tiers (Melvor Realm: Easy -> Mythical)
   const melvorSlayerCategories = [
     ...pkgs.melvorF.data.slayerTaskCategories.map((c) => ({ ...c, ns: 'melvorF' })),
@@ -390,27 +436,20 @@ async function main() {
   const IGNORED_MONSTER_IDS = new Set([
     'melvorF:RandomITM',
     'melvorTotH:RandomSpiderLair',
-    'melvorF:MysteriousFigurePhase1',
-    'melvorF:MysteriousFigurePhase2',
-    'melvorF:Ahrenia',
-    'melvorF:Bane',
-    'melvorF:BaneInstrumentOfFear',
-    'melvorTotH:TheHeraldPhase1',
-    'melvorTotH:TheHeraldPhase2',
-    'melvorTotH:TheHeraldPhase3',
     'melvorF:FierceDevilBoss',
     'melvorF:ElementalistBoss',
     'melvorF:PratTheGuardianOfSecretsBoss',
     'melvorF:MalcsTheGuardianOfStrongholds',
-    'melvorItA:Starfang',
-    'melvorItA:Voidmaw',
-    'melvorItA:Celesterror',
+    'melvorF:MysteriousFigurePhase1Stronghold',
+    'melvorF:MysteriousFigurePhase2Stronghold',
+    'melvorF:AhreniaStronghold',
   ]);
 
   const STYLE_MAP = {
     melee: 'Melee',
     ranged: 'Ranged',
     magic: 'Magic',
+    random: 'Random',
   };
 
   const DOT_EFFECT_KEYWORDS = [
@@ -459,10 +498,12 @@ async function main() {
     ...slayerAreaList,
     ...dungeonList,
     ...strongholdList,
+    ...specialDungeonList,
     ...abyssCombatAreaList,
     ...abyssSlayerAreaList,
     ...abyssDungeonList,
     ...abyssStrongholdList,
+    ...abyssSpecialDungeonList,
   ];
 
   // Collect all monsters and sort by combatLevel
@@ -481,9 +522,9 @@ async function main() {
     let attackBonus = 0;
     let spellMaxHit = undefined;
 
-    if (attackStyle === 'Melee') {
-      attackLevel = m.levels?.Strength || 1;
-      attackBonus = getStat('meleeStrengthBonus');
+    if (attackStyle === 'Melee' || attackStyle === 'Random') {
+      attackLevel = m.levels?.Strength || m.levels?.Attack || 1;
+      attackBonus = getStat('meleeStrengthBonus') || getStat('rangedStrengthBonus') || 0;
     } else if (attackStyle === 'Ranged') {
       attackLevel = m.levels?.Ranged || 1;
       attackBonus = getStat('rangedStrengthBonus');
@@ -615,15 +656,10 @@ async function main() {
       .filter((a) => a.id !== 'melvorTotH:Lair_of_the_Spider_Queen' && !a.overrideDamageType && a.monsters.includes(name))
       .map((a) => a.name);
 
-    const isStrongholdOnlyBoss = [
-      'melvorF:MysteriousFigurePhase1Stronghold',
-      'melvorF:MysteriousFigurePhase2Stronghold',
-      'melvorF:AhreniaStronghold',
-    ].includes(fullId);
-
-    const damageType = isStrongholdOnlyBoss
-      ? 'melvorD:Pure'
-      : (m.damageType || 'melvorD:Normal');
+    const damageType =
+      fullId === 'melvorItA:Starfang' || fullId === 'melvorItA:Voidmaw' || fullId === 'melvorItA:Celesterror'
+        ? 'melvorItA:Eternal'
+        : (m.damageType || 'melvorD:Normal');
 
     const realm =
       m.ns === 'melvorItA' && fullId !== 'melvorItA:MutatingPlant' && fullId !== 'melvorItA:MutatingChicken' && fullId !== 'melvorItA:MutatingCow' && fullId !== 'melvorItA:MutatingScarecrow'
@@ -683,16 +719,26 @@ async function main() {
     'utf8'
   );
 
+  await fs.writeFile(
+    path.join(outDir, 'specialDungeonData.js'),
+    [
+      serializeJsExport('specialDungeonData', specialDungeonList),
+      serializeJsExport('abyssSpecialDungeonData', abyssSpecialDungeonList),
+    ].join(''),
+    'utf8'
+  );
   console.log(`[DONE] Generated v1.3.1 data in ${outDir}:`);
   console.log(`  - Monsters: ${monsterMap.length}`);
   console.log(`  - Melvor Combat Areas: ${combatAreaList.length}`);
   console.log(`  - Melvor Slayer Areas: ${slayerAreaList.length}`);
   console.log(`  - Melvor Dungeons: ${dungeonList.length}`);
+  console.log(`  - Melvor Special Dungeons/Events: ${specialDungeonList.length}`);
   console.log(`  - Melvor Strongholds: ${strongholdList.length}`);
   console.log(`  - Melvor Slayer Tiers: ${slayerTaskList.length}`);
   console.log(`  - Abyssal Battlegrounds: ${abyssCombatAreaList.length}`);
   console.log(`  - Abyssal Slayer Areas: ${abyssSlayerAreaList.length}`);
   console.log(`  - Abyssal Dungeons/Depths: ${abyssDungeonList.length}`);
+  console.log(`  - Abyssal Special Depths: ${abyssSpecialDungeonList.length}`);
   console.log(`  - Abyssal Strongholds: ${abyssStrongholdList.length}`);
   console.log(`  - Abyssal Slayer Tiers: ${abyssSlayerTaskList.length}`);
 }

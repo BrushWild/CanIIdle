@@ -246,6 +246,11 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#special">
+            <h3 class="mb-0">Special</h3>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" data-toggle="tab" href="#strongholds">
             <h3 class="mb-0">Strongholds</h3>
           </a>
@@ -291,6 +296,37 @@
                 </td>
                 <td class="text-center" v-text="formatDRCell(calculatedDungeon.minimumDR)"></td>
                 <td class="text-center" v-text="calculatedDungeon.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
+              </tr>
+            </tbody>
+          </table>
+          <table id='specialOverview'
+            class="table table-responsive-md table-striped table-dark table-bordered table-hover">
+            <thead>
+              <tr>
+                <th class="align-middle text-center" style="width: 20%" scope="col">Special Dungeon / Event</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">
+                  <div data-toggle="tooltip" data-placement="top"
+                    title="Total DR%/AR% you need equipped to safely survive each boss's max hit with your currently set HP">
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
+                  </div>
+                </th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">
+                  <div data-toggle="tooltip" data-placement="top"
+                    title="Total HP you need to safely survive each boss's max hit with your currently set DR%/AR%">
+                    <u>HP Needed</u>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="calculatedSpecial in activeSpecialDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
+                :class="{idleable : calculatedSpecial.isIdleable}">
+                <td class="text-center">
+                  <span class="expansionBadge" :class="calculatedSpecial.expansion.cssClass" :title="calculatedSpecial.expansion.fullName" v-text="calculatedSpecial.expansion.short"></span><span v-text="calculatedSpecial.name"></span>
+                </td>
+                <td class="text-center" v-text="formatDRCell(calculatedSpecial.minimumDR)"></td>
+                <td class="text-center" v-text="calculatedSpecial.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
               </tr>
             </tbody>
           </table>
@@ -565,6 +601,110 @@
             </thead>
             <tbody>
               <template v-for="monster in findMonstersForArea('activeDungeons', dungeonChoice)">
+                <tr :class="{idleable : monster.isIdleable}">
+                  <td class="text-center">
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName" v-text="monster.expansion.short"></span><span v-text="monster.name"></span>
+                    <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
+                      title="This monster is able to put you to sleep for +20% damage.">
+                    <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
+                      title="This monster can stun or freeze you for +30% damage.">
+                    <span v-if="monster.canCrystallize" class="crystalBadge"
+                      title="This monster can inflict Crystallize / Crystal Sanction.">Crystal</span>
+                    <span v-if="monster.hasDoT" class="dotBadge"
+                      :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
+                  </td>
+                  <td class="text-center" v-text="monster.attackStyle"></td>
+                  <td class="text-center" v-text="monster.intimidation"></td>
+                  <td class="text-center"></td>
+                  <td class="text-center" v-text="monster.maxHit"></td>
+                  <td class="text-center" v-text="monster.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(monster.minimumDR)"></td>
+                  <td class="text-center" v-text="monster.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
+                </tr>
+                <tr v-for="attack in monster.attacks" :class="{idleable : attack.isIdleable}">
+                  <td class="text-center"></td>
+                  <td class="text-center"></td>
+                  <td class="text-center"></td>
+                  <td class="text-center" v-text="attack.name"></td>
+                  <td class="text-center" v-text="attack.maxHit"></td>
+                  <td class="text-center" v-text="attack.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(attack.minimumDR)"></td>
+                  <td class="text-center" v-text="attack.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
+                </tr>
+                <br>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <div id="special" class="tab-pane fade">
+          <div class="alert alert-warning my-3 text-left" role="alert">
+            <h4 class="alert-heading">Special Dungeons &amp; Events Disclaimer</h4>
+            <p class="mb-1">
+              These encounters were historically excluded from standard idle calculators because they feature unique game mechanics that prevent unattended, indefinite "true idling":
+            </p>
+            <ul class="mb-2">
+              <li><strong>Pause on Bosses (<code>pauseOnBosses: true</code>):</strong> Combat automatically pauses before each boss phase (e.g. in <em>Into the Mist</em> and <em>Throne of the Herald</em>), requiring player interaction to proceed.</li>
+              <li><strong>Multi-Style Phasing:</strong> Bosses transition through multiple combat styles (Melee &rarr; Ranged &rarr; Magic) across phases, creating Combat Triangle penalties unless switching gear or styles between pauses.</li>
+              <li><strong>Interactive Event Mechanics:</strong> <em>Impending Darkness Event</em> requires selecting Slayer curse afflictions between waves and features Bane's <em>Random</em> attack style (calculated here against the worst-case Combat Triangle modifier for your safety).</li>
+            </ul>
+            <hr class="my-2">
+            <p class="mb-0 text-muted" style="color: #ffecb5 !important;">
+              <strong>How to use this tab:</strong> Use the stats below to verify that your HP and Damage Reduction are sufficient to safely survive each boss's strongest attack without being 1-shot during that phase.
+            </p>
+          </div>
+
+          <div class="input-group my-3">
+            <div class="input-group-prepend">
+              <label class="input-group-text" for="specialChoice">Special Dungeon / Event:</label>
+            </div>
+            <div class="dropdown flex-grow-1">
+              <button class="btn customDropdownBtn dropdown-toggle w-100 text-left d-flex justify-content-between align-items-center" type="button" id="specialChoice" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span>
+                  <span class="expansionBadge" :class="getSelectedExpansion('activeSpecialDungeons', specialChoice).cssClass" :title="getSelectedExpansion('activeSpecialDungeons', specialChoice).fullName" v-text="getSelectedExpansion('activeSpecialDungeons', specialChoice).short"></span><span v-text="specialChoice"></span>
+                </span>
+              </button>
+              <div class="dropdown-menu w-100 customDropdownMenu" aria-labelledby="specialChoice">
+                <a class="dropdown-item" href="#"
+                  v-for="calculatedSpecial in activeSpecialDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
+                  :class="{active : specialChoice === calculatedSpecial.name}"
+                  @click.prevent="specialChoice = calculatedSpecial.name">
+                  <span class="expansionBadge" :class="calculatedSpecial.expansion.cssClass" :title="calculatedSpecial.expansion.fullName" v-text="calculatedSpecial.expansion.short"></span><span v-text="calculatedSpecial.name"></span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card bg-dark text-white border-secondary mb-3" v-if="getSelectedSpecialCaveat(specialChoice)">
+            <div class="card-body py-2 px-3">
+              <small class="text-warning"><strong>Specific Encounter Note:</strong> <span v-text="getSelectedSpecialCaveat(specialChoice)"></span></small>
+            </div>
+          </div>
+
+          <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
+            <thead>
+              <tr>
+                <th class="align-middle text-center" style="width: 20%" scope="col">Monster Name</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Style</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Intimidation</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Attack Name</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Max Hit</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">Reduced Max hit</th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">
+                  <div data-toggle="tooltip" data-placement="top"
+                    title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
+                  </div>
+                </th>
+                <th class="align-middle text-center" style="width: 11%" scope="col">
+                  <div data-toggle="tooltip" data-placement="top"
+                    title="Total HP you need to safely idle this monster with your currently set DR%/AR%">
+                    <u>HP Needed</u>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="monster in findMonstersForArea('activeSpecialDungeons', specialChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
                   <td class="text-center">
                     <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName" v-text="monster.expansion.short"></span><span v-text="monster.name"></span>
@@ -919,6 +1059,7 @@
     abyssStrongholdData,
     abyssSlayerTaskData
   } from "./DataImportTools/Exported_Data/Exported_Data_TotH/abyssalData.js"
+  import { specialDungeonData, abyssSpecialDungeonData } from "./DataImportTools/Exported_Data/Exported_Data_TotH/specialDungeonData.js"
 
   let app = new Vue({
     el: '#app',
@@ -938,6 +1079,9 @@
         crystalSanctionProtection: "No",
         strongholdTier: "Standard",
         dungeonChoice: "Chicken Coop",
+        specialChoice: "Into the Mist",
+        specialDungeons: specialDungeonData,
+        abyssSpecialDungeons: abyssSpecialDungeonData,
         combatChoice: "Farmlands",
         slayerChoice: "Penumbra",
         strongholdChoice: "Stronghold of the Undead",
@@ -997,6 +1141,12 @@
         const list = this[listProp] || [];
         const found = list.find(item => item.name === choiceName) || list[0];
         return this.getExpansionInfo(found?.id);
+      },
+
+      getSelectedSpecialCaveat(choiceName) {
+        const list = this.activeSpecialDungeons || [];
+        const found = list.find(s => s.name === choiceName) || list[0];
+        return found?.caveats || "";
       },
 
       // Share URL
@@ -1067,8 +1217,17 @@
           return 0;
         }
         const playerStyleIdx = this.getCombatStyle(this.combatStyle);
-        const enemyStyleIdx = this.getCombatStyle(attackStyle);
-        const triangleMult = this.combatTriangle[playerStyleIdx][enemyStyleIdx];
+        let triangleMult;
+        if (attackStyle === "Random") {
+          triangleMult = Math.max(
+            this.combatTriangle[playerStyleIdx][0],
+            this.combatTriangle[playerStyleIdx][1],
+            this.combatTriangle[playerStyleIdx][2]
+          );
+        } else {
+          const enemyStyleIdx = this.getCombatStyle(attackStyle);
+          triangleMult = this.combatTriangle[playerStyleIdx][enemyStyleIdx];
+        }
         return Math.max(0, Math.min(100, Math.ceil(Math.ceil(100 - this.totalHealth / attack * (100 * this.autoEatThreshold)) / triangleMult)) + intimidation);
       },
 
@@ -1077,8 +1236,17 @@
           return Math.max(100, Math.ceil(attack / this.autoEatThreshold / 10) * 10);
         }
         const playerStyleIdx = this.getCombatStyle(this.combatStyle);
-        const enemyStyleIdx = this.getCombatStyle(attackStyle);
-        const triangleMult = this.combatTriangle[playerStyleIdx][enemyStyleIdx];
+        let triangleMult;
+        if (attackStyle === "Random") {
+          triangleMult = Math.max(
+            this.combatTriangle[playerStyleIdx][0],
+            this.combatTriangle[playerStyleIdx][1],
+            this.combatTriangle[playerStyleIdx][2]
+          );
+        } else {
+          const enemyStyleIdx = this.getCombatStyle(attackStyle);
+          triangleMult = this.combatTriangle[playerStyleIdx][enemyStyleIdx];
+        }
         let intimidatedDR = parseInt(this.currentDR) - intimidation;
         let yakAdjustedDr = parseInt(intimidatedDR) + parseInt(this.calculateYakDRModifier(attackStyle, isSlayer, damageType));
         return Math.max(100, Math.ceil((attack - Math.floor(attack * (Math.floor(yakAdjustedDr * triangleMult)) / 100)) / this.autoEatThreshold / 10) * 10);
@@ -1089,8 +1257,17 @@
           return attack;
         }
         const playerStyleIdx = this.getCombatStyle(this.combatStyle);
-        const enemyStyleIdx = this.getCombatStyle(attackStyle);
-        const triangleMult = this.combatTriangle[playerStyleIdx][enemyStyleIdx];
+        let triangleMult;
+        if (attackStyle === "Random") {
+          triangleMult = Math.max(
+            this.combatTriangle[playerStyleIdx][0],
+            this.combatTriangle[playerStyleIdx][1],
+            this.combatTriangle[playerStyleIdx][2]
+          );
+        } else {
+          const enemyStyleIdx = this.getCombatStyle(attackStyle);
+          triangleMult = this.combatTriangle[playerStyleIdx][enemyStyleIdx];
+        }
         let intimidatedDR = parseInt(this.currentDR) - intimidation;
         let yakAdjustedDr = parseInt(intimidatedDR) + parseInt(this.calculateYakDRModifier(attackStyle, isSlayer, damageType));
         let combatAdjustedDr = Math.floor(yakAdjustedDr * triangleMult);
@@ -1108,7 +1285,7 @@
 
       calculateBaseNormalAttackRaw(monster) {
         let maximumNormalAttack = 0;
-        if (monster.attackStyle === "Melee" || monster.attackStyle === "Ranged") {
+        if (monster.attackStyle === "Melee" || monster.attackStyle === "Ranged" || monster.attackStyle === "Random") {
           let effectiveAttackLevel = monster.attackLevel + 9;
           maximumNormalAttack = Math.floor(this.numberMultiplier * (1.3 + effectiveAttackLevel / 10 + monster.attackBonus / 80 + effectiveAttackLevel * monster.attackBonus / 640));
         }
@@ -1395,6 +1572,9 @@
         if (!this.activeDungeons.some(a => a.name === this.dungeonChoice)) {
           this.dungeonChoice = this.activeDungeons[0]?.name || "";
         }
+        if (!this.activeSpecialDungeons.some(s => s.name === this.specialChoice)) {
+          this.specialChoice = this.activeSpecialDungeons[0]?.name || "";
+        }
         if (!this.activeStrongholds.some(a => a.name === this.strongholdChoice)) {
           this.strongholdChoice = this.activeStrongholds[0]?.name || "";
         }
@@ -1412,6 +1592,9 @@
       },
       activeDungeons() {
         return this.realm === "Abyssal" ? this.abyssDungeons : this.dungeons;
+      },
+      activeSpecialDungeons() {
+        return this.realm === "Abyssal" ? this.abyssSpecialDungeons : this.specialDungeons;
       },
       activeStrongholds() {
         return this.realm === "Abyssal" ? this.abyssStrongholds : this.strongholds;
