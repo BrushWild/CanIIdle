@@ -361,11 +361,16 @@
           <div class="input-group my-3">
             <div class="input-group-prepend">
               <label class="input-group-text" for="combatChoice">Combat Area:</label>
+              <span class="input-group-text bg-dark border-secondary">
+                <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeCombatAreas', combatChoice).cssClass" :title="getSelectedExpansion('activeCombatAreas', combatChoice).fullName" v-text="getSelectedExpansion('activeCombatAreas', combatChoice).short"></span>
+              </span>
             </div>
             <select class="custom-select" id="combatChoice" v-model="combatChoice">
               <option
                 v-for="calculatedCombat in activeCombatAreas.map(function (combatArea){ return calculateInstance(combatArea, false); })"
-                v-text="calculatedCombat.name"></option>
+                :value="calculatedCombat.name"
+                :title="calculatedCombat.expansion.fullName"
+                v-text="'[' + calculatedCombat.expansion.short + '] ' + calculatedCombat.name"></option>
             </select>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
@@ -432,11 +437,16 @@
           <div class="input-group my-3">
             <div class="input-group-prepend">
               <label class="input-group-text" for="slayerChoice">Slayer Area:</label>
+              <span class="input-group-text bg-dark border-secondary">
+                <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeSlayerAreas', slayerChoice).cssClass" :title="getSelectedExpansion('activeSlayerAreas', slayerChoice).fullName" v-text="getSelectedExpansion('activeSlayerAreas', slayerChoice).short"></span>
+              </span>
             </div>
             <select class="custom-select" id="slayerChoice" v-model="slayerChoice">
               <option
                 v-for="calculatedArea in activeSlayerAreas.map(function (slayerArea){ return calculateInstance(slayerArea, false); })"
-                v-text="calculatedArea.name"></option>
+                :value="calculatedArea.name"
+                :title="calculatedArea.expansion.fullName"
+                v-text="'[' + calculatedArea.expansion.short + '] ' + calculatedArea.name"></option>
             </select>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
@@ -503,11 +513,16 @@
           <div class="input-group my-3">
             <div class="input-group-prepend">
               <label class="input-group-text" for="dungeonChoice">Dungeon:</label>
+              <span class="input-group-text bg-dark border-secondary">
+                <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeDungeons', dungeonChoice).cssClass" :title="getSelectedExpansion('activeDungeons', dungeonChoice).fullName" v-text="getSelectedExpansion('activeDungeons', dungeonChoice).short"></span>
+              </span>
             </div>
             <select class="custom-select" id="dungeonChoice" v-model="dungeonChoice">
               <option
                 v-for="calculatedDungeon in activeDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
-                v-text="calculatedDungeon.name"></option>
+                :value="calculatedDungeon.name"
+                :title="calculatedDungeon.expansion.fullName"
+                v-text="'[' + calculatedDungeon.expansion.short + '] ' + calculatedDungeon.name"></option>
             </select>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
@@ -576,9 +591,12 @@
               <div class="input-group">
                 <div class="input-group-prepend">
                   <label class="input-group-text" for="strongholdChoice">Stronghold:</label>
+                  <span class="input-group-text bg-dark border-secondary">
+                    <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeStrongholds', strongholdChoice).cssClass" :title="getSelectedExpansion('activeStrongholds', strongholdChoice).fullName" v-text="getSelectedExpansion('activeStrongholds', strongholdChoice).short"></span>
+                  </span>
                 </div>
                 <select class="custom-select" id="strongholdChoice" v-model="strongholdChoice">
-                  <option v-for="sh in activeStrongholds" v-text="sh.name"></option>
+                  <option v-for="sh in activeStrongholds" :value="sh.name" :title="getExpansionInfo(sh.id).fullName" v-text="'[' + getExpansionInfo(sh.id).short + '] ' + sh.name"></option>
                 </select>
               </div>
             </div>
@@ -660,12 +678,17 @@
           <div class="input-group my-3">
             <div class="input-group-prepend">
               <label class="input-group-text" for="slayerTier">Slayer Tier:</label>
+              <span class="input-group-text bg-dark border-secondary">
+                <span class="expansionBadge mr-0" :class="getSelectedExpansion('activeSlayerTiers', slayerTier).cssClass" :title="getSelectedExpansion('activeSlayerTiers', slayerTier).fullName" v-text="getSelectedExpansion('activeSlayerTiers', slayerTier).short"></span>
+              </span>
             </div>
             <select class="custom-select" id="slayerTier" v-model="slayerTier">
               <option selected hidden>Choose Tier</option>
               <option
                 v-for="calculatedTier in activeSlayerTiers.map(function (tier){ return calculateInstance(tier, true); })"
-                v-text="calculatedTier.name"></option>
+                :value="calculatedTier.name"
+                :title="calculatedTier.expansion.fullName"
+                v-text="'[' + calculatedTier.expansion.short + '] ' + calculatedTier.name"></option>
             </select>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
@@ -940,6 +963,12 @@
           return { short: "ItA", fullName: "Into the Abyss", cssClass: "expansion-ItA" };
         }
         return { short: "Base", fullName: "Base Game (Melvor Idle)", cssClass: "expansion-Base" };
+      },
+
+      getSelectedExpansion(listProp, choiceName) {
+        const list = this[listProp] || [];
+        const found = list.find(item => item.name === choiceName) || list[0];
+        return this.getExpansionInfo(found?.id);
       },
 
       // Share URL
