@@ -22,7 +22,12 @@
     crossorigin="anonymous"></script>
 
   <!-- Site specific style -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1.3.1">
+  <style>
+    [v-cloak] {
+      display: none !important;
+    }
+  </style>
 
   <!-- Tracking Stuff because i think its interesting -->
   <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZGSWQ92Z2B"></script> -->
@@ -38,18 +43,18 @@
 <body>
   <div id='app' class="container-fluid" v-cloak>
     <h1 class="text-white text-center my-4" data-toggle="tooltip" data-placement="bottom"
-      title="Now with Strongholds, Atlas of Discovery, and Into the Abyss!">
-      {{ realm === 'Abyssal' ? 'Can I Idle Into the Abyss?' : 'Can I Idle Melvor?' }}</h1>
+      title="Now with Strongholds, Atlas of Discovery, and Into the Abyss!"
+      v-text="realm === 'Abyssal' ? 'Can I Idle Into the Abyss?' : 'Can I Idle Melvor?'">Can I Idle Melvor?</h1>
     <h4 class="text-white text-center my-3">Up to date as of v1.3.1</h4>
 
     <!-- Realm / Expansion Selector -->
     <div class="text-center my-3 realmToggleGroup">
       <div class="btn-group" role="group" aria-label="Realm Selector">
-        <button id="realmMelvorBtn" type="button" class="btn"
+        <button id="realmMelvorBtn" type="button" class="btn btn-success"
           :class="realm === 'Melvor' ? 'btn-success' : 'btn-secondary'" @click="realm = 'Melvor'">
           Base Game + TotH + AoD (Melvor Realm)
         </button>
-        <button id="realmAbyssalBtn" type="button" class="btn"
+        <button id="realmAbyssalBtn" type="button" class="btn btn-secondary"
           :class="realm === 'Abyssal' ? 'btn-info' : 'btn-secondary'" @click="realm = 'Abyssal'">
           Into the Abyss (Abyssal Realm)
         </button>
@@ -75,7 +80,7 @@
           <div class="input-group" data-toggle="tooltip" data-placement="bottom"
             :title="realm === 'Abyssal' ? 'Current out of combat Abyssal Resistance %' : 'Current out of combat Damage Reduction %'">
             <div class="input-group-prepend">
-              <label class="input-group-text" for="currentDR">{{ currentResistanceLabel }}</label>
+              <label class="input-group-text" for="currentDR" v-text="currentResistanceLabel">Current DR%</label>
             </div>
             <input id="currentDR" type="number" class="form-control" min="0" max="95" value="0" v-model="currentDR" />
           </div>
@@ -256,7 +261,7 @@
           </a>
         </li>
       </ul>
-      <div class="tab-content">
+      <div class="tab-content" v-cloak>
         <div id="overview" class="tab-pane fade show active">
           <table id='dungeonOverview'
             class="table table-responsive-md table-striped table-dark table-bordered table-hover">
@@ -266,7 +271,7 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
                     title="Total DR%/AR% you need equipped to safely idle this dungeon with your currently set HP">
-                    <u>{{ neededResistanceLabel }}</u>
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
@@ -282,10 +287,10 @@
                 v-for="calculatedDungeon in activeDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
                 :class="{idleable : calculatedDungeon.isIdleable}">
                 <td class="text-center">
-                  <span class="expansionBadge" :class="calculatedDungeon.expansion.cssClass" :title="calculatedDungeon.expansion.fullName">{{calculatedDungeon.expansion.short}}</span>{{calculatedDungeon.name}}
+                  <span class="expansionBadge" :class="calculatedDungeon.expansion.cssClass" :title="calculatedDungeon.expansion.fullName" v-text="calculatedDungeon.expansion.short"></span><span v-text="calculatedDungeon.name"></span>
                 </td>
-                <td class="text-center">{{formatDRCell(calculatedDungeon.minimumDR)}}</td>
-                <td class="text-center">{{calculatedDungeon.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                <td class="text-center" v-text="formatDRCell(calculatedDungeon.minimumDR)"></td>
+                <td class="text-center" v-text="calculatedDungeon.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
               </tr>
             </tbody>
           </table>
@@ -293,11 +298,11 @@
             class="table table-responsive-md table-striped table-dark table-bordered table-hover">
             <thead>
               <tr>
-                <th class="align-middle text-center" style="width: 20%" scope="col">Stronghold Name ({{strongholdTier}})</th>
+                <th class="align-middle text-center" style="width: 20%" scope="col" v-text="'Stronghold Name (' + strongholdTier + ')'">Stronghold Name (Standard)</th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
                     title="Strongholds deal Pure Damage which ignores Player DR% and AR%">
-                    <u>{{ neededResistanceLabel }}</u>
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
@@ -313,10 +318,10 @@
                 v-for="calculatedStronghold in activeStrongholds.map(function (sh){ return calculateStrongholdInstance(sh, strongholdTier); })"
                 :class="{idleable : calculatedStronghold.isIdleable}">
                 <td class="text-center">
-                  <span class="expansionBadge" :class="calculatedStronghold.expansion.cssClass" :title="calculatedStronghold.expansion.fullName">{{calculatedStronghold.expansion.short}}</span>{{calculatedStronghold.name}} ({{strongholdTier}})
+                  <span class="expansionBadge" :class="calculatedStronghold.expansion.cssClass" :title="calculatedStronghold.expansion.fullName" v-text="calculatedStronghold.expansion.short"></span><span v-text="calculatedStronghold.name + ' (' + strongholdTier + ')'"></span>
                 </td>
-                <td class="text-center">{{formatDRCell(calculatedStronghold.minimumDR)}}</td>
-                <td class="text-center">{{calculatedStronghold.minimumHP}} HP</td>
+                <td class="text-center" v-text="formatDRCell(calculatedStronghold.minimumDR)"></td>
+                <td class="text-center" v-text="calculatedStronghold.minimumHP + ' HP'"></td>
               </tr>
             </tbody>
           </table>
@@ -328,7 +333,7 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
                     title="Total DR%/AR% you need equipped to safely idle this slayer tier with your currently set HP">
-                    <u>{{ neededResistanceLabel }}</u>
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
@@ -344,10 +349,10 @@
                 v-for="calculatedTier in activeSlayerTiers.map(function (tier){ return calculateInstance(tier, true); })"
                 :class="{idleable : calculatedTier.isIdleable, warning : calculatedTier.name == 'Master'}">
                 <td class="text-center">
-                  <span class="expansionBadge" :class="calculatedTier.expansion.cssClass" :title="calculatedTier.expansion.fullName">{{calculatedTier.expansion.short}}</span>{{calculatedTier.name}}
+                  <span class="expansionBadge" :class="calculatedTier.expansion.cssClass" :title="calculatedTier.expansion.fullName" v-text="calculatedTier.expansion.short"></span><span v-text="calculatedTier.name"></span>
                 </td>
-                <td class="text-center">{{formatDRCell(calculatedTier.minimumDR)}}</td>
-                <td class="text-center">{{calculatedTier.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                <td class="text-center" v-text="formatDRCell(calculatedTier.minimumDR)"></td>
+                <td class="text-center" v-text="calculatedTier.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
               </tr>
             </tbody>
           </table>
@@ -359,8 +364,8 @@
             </div>
             <select class="custom-select" id="combatChoice" v-model="combatChoice">
               <option
-                v-for="calculatedCombat in activeCombatAreas.map(function (combatArea){ return calculateInstance(combatArea, false); })">
-                {{calculatedCombat.name}}</option>
+                v-for="calculatedCombat in activeCombatAreas.map(function (combatArea){ return calculateInstance(combatArea, false); })"
+                v-text="calculatedCombat.name"></option>
             </select>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
@@ -375,7 +380,7 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
                     title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>{{ neededResistanceLabel }}</u>
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
@@ -390,7 +395,7 @@
               <template v-for="monster in findMonstersForArea('activeCombatAreas', combatChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
                   <td class="text-center">
-                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName" v-text="monster.expansion.short"></span><span v-text="monster.name"></span>
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
@@ -400,23 +405,23 @@
                     <span v-if="monster.hasDoT" class="dotBadge"
                       :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
                   </td>
-                  <td class="text-center">{{monster.attackStyle}}</td>
-                  <td class="text-center">{{monster.intimidation}}</td>
+                  <td class="text-center" v-text="monster.attackStyle"></td>
+                  <td class="text-center" v-text="monster.intimidation"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{monster.maxHit}}</td>
-                  <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
-                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                  <td class="text-center" v-text="monster.maxHit"></td>
+                  <td class="text-center" v-text="monster.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(monster.minimumDR)"></td>
+                  <td class="text-center" v-text="monster.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
                 </tr>
                 <tr v-for="attack in monster.attacks" :class="{idleable : attack.isIdleable}">
                   <td class="text-center"></td>
                   <td class="text-center"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{attack.name}}</td>
-                  <td class="text-center">{{attack.maxHit}}</td>
-                  <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
-                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                  <td class="text-center" v-text="attack.name"></td>
+                  <td class="text-center" v-text="attack.maxHit"></td>
+                  <td class="text-center" v-text="attack.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(attack.minimumDR)"></td>
+                  <td class="text-center" v-text="attack.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
                 </tr>
                 <br>
               </template>
@@ -430,8 +435,8 @@
             </div>
             <select class="custom-select" id="slayerChoice" v-model="slayerChoice">
               <option
-                v-for="calculatedArea in activeSlayerAreas.map(function (slayerArea){ return calculateInstance(slayerArea, false); })">
-                {{calculatedArea.name}}</option>
+                v-for="calculatedArea in activeSlayerAreas.map(function (slayerArea){ return calculateInstance(slayerArea, false); })"
+                v-text="calculatedArea.name"></option>
             </select>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
@@ -446,7 +451,7 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
                     title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>{{ neededResistanceLabel }}</u>
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
@@ -461,7 +466,7 @@
               <template v-for="monster in findMonstersForArea('activeSlayerAreas', slayerChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
                   <td class="text-center">
-                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName" v-text="monster.expansion.short"></span><span v-text="monster.name"></span>
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
@@ -471,23 +476,23 @@
                     <span v-if="monster.hasDoT" class="dotBadge"
                       :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
                   </td>
-                  <td class="text-center">{{monster.attackStyle}}</td>
-                  <td class="text-center">{{monster.intimidation}}</td>
+                  <td class="text-center" v-text="monster.attackStyle"></td>
+                  <td class="text-center" v-text="monster.intimidation"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{monster.maxHit}}</td>
-                  <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
-                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                  <td class="text-center" v-text="monster.maxHit"></td>
+                  <td class="text-center" v-text="monster.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(monster.minimumDR)"></td>
+                  <td class="text-center" v-text="monster.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
                 </tr>
                 <tr v-for="attack in monster.attacks" :class="{idleable : attack.isIdleable}">
                   <td class="text-center"></td>
                   <td class="text-center"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{attack.name}}</td>
-                  <td class="text-center">{{attack.maxHit}}</td>
-                  <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
-                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                  <td class="text-center" v-text="attack.name"></td>
+                  <td class="text-center" v-text="attack.maxHit"></td>
+                  <td class="text-center" v-text="attack.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(attack.minimumDR)"></td>
+                  <td class="text-center" v-text="attack.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
                 </tr>
                 <br>
               </template>
@@ -501,8 +506,8 @@
             </div>
             <select class="custom-select" id="dungeonChoice" v-model="dungeonChoice">
               <option
-                v-for="calculatedDungeon in activeDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })">
-                {{calculatedDungeon.name}}</option>
+                v-for="calculatedDungeon in activeDungeons.map(function (dungeon){ return calculateInstance(dungeon, false); })"
+                v-text="calculatedDungeon.name"></option>
             </select>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
@@ -517,7 +522,7 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
                     title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>{{ neededResistanceLabel }}</u>
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
@@ -532,7 +537,7 @@
               <template v-for="monster in findMonstersForArea('activeDungeons', dungeonChoice)">
                 <tr :class="{idleable : monster.isIdleable}">
                   <td class="text-center">
-                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName" v-text="monster.expansion.short"></span><span v-text="monster.name"></span>
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
@@ -542,23 +547,23 @@
                     <span v-if="monster.hasDoT" class="dotBadge"
                       :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
                   </td>
-                  <td class="text-center">{{monster.attackStyle}}</td>
-                  <td class="text-center">{{monster.intimidation}}</td>
+                  <td class="text-center" v-text="monster.attackStyle"></td>
+                  <td class="text-center" v-text="monster.intimidation"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{monster.maxHit}}</td>
-                  <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
-                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                  <td class="text-center" v-text="monster.maxHit"></td>
+                  <td class="text-center" v-text="monster.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(monster.minimumDR)"></td>
+                  <td class="text-center" v-text="monster.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
                 </tr>
                 <tr v-for="attack in monster.attacks" :class="{idleable : attack.isIdleable}">
                   <td class="text-center"></td>
                   <td class="text-center"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{attack.name}}</td>
-                  <td class="text-center">{{attack.maxHit}}</td>
-                  <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
-                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                  <td class="text-center" v-text="attack.name"></td>
+                  <td class="text-center" v-text="attack.maxHit"></td>
+                  <td class="text-center" v-text="attack.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(attack.minimumDR)"></td>
+                  <td class="text-center" v-text="attack.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
                 </tr>
                 <br>
               </template>
@@ -573,7 +578,7 @@
                   <label class="input-group-text" for="strongholdChoice">Stronghold:</label>
                 </div>
                 <select class="custom-select" id="strongholdChoice" v-model="strongholdChoice">
-                  <option v-for="sh in activeStrongholds">{{sh.name}}</option>
+                  <option v-for="sh in activeStrongholds" v-text="sh.name"></option>
                 </select>
               </div>
             </div>
@@ -602,7 +607,7 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
                     title="Stronghold enemies deal Pure Damage which ignores Player DR% and AR%">
-                    <u>{{ neededResistanceLabel }}</u>
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
@@ -617,7 +622,7 @@
               <template v-for="monster in findMonstersForStronghold(strongholdChoice, strongholdTier)">
                 <tr :class="{idleable : monster.isIdleable}">
                   <td class="text-center">
-                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName" v-text="monster.expansion.short"></span><span v-text="monster.name"></span>
                     <span class="pureDamageBadge" title="Deals Pure Damage (ignores DR% and AR%)">Pure</span>
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
@@ -628,23 +633,23 @@
                     <span v-if="monster.hasDoT" class="dotBadge"
                       :title="'Inflicts DoT: ' + monster.dots.join(', ')">DoT</span>
                   </td>
-                  <td class="text-center">{{monster.attackStyle}}</td>
-                  <td class="text-center">{{monster.intimidation}}</td>
+                  <td class="text-center" v-text="monster.attackStyle"></td>
+                  <td class="text-center" v-text="monster.intimidation"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{monster.maxHit}}</td>
-                  <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
-                  <td class="text-center">{{monster.minimumHP}} HP</td>
+                  <td class="text-center" v-text="monster.maxHit"></td>
+                  <td class="text-center" v-text="monster.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(monster.minimumDR)"></td>
+                  <td class="text-center" v-text="monster.minimumHP + ' HP'"></td>
                 </tr>
                 <tr v-for="attack in monster.attacks" :class="{idleable : attack.isIdleable}">
                   <td class="text-center"></td>
                   <td class="text-center"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{attack.name}}</td>
-                  <td class="text-center">{{attack.maxHit}}</td>
-                  <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
-                  <td class="text-center">{{attack.minimumHP}} HP</td>
+                  <td class="text-center" v-text="attack.name"></td>
+                  <td class="text-center" v-text="attack.maxHit"></td>
+                  <td class="text-center" v-text="attack.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(attack.minimumDR)"></td>
+                  <td class="text-center" v-text="attack.minimumHP + ' HP'"></td>
                 </tr>
                 <br>
               </template>
@@ -659,8 +664,8 @@
             <select class="custom-select" id="slayerTier" v-model="slayerTier">
               <option selected hidden>Choose Tier</option>
               <option
-                v-for="calculatedTier in activeSlayerTiers.map(function (tier){ return calculateInstance(tier, true); })">
-                {{calculatedTier.name}}</option>
+                v-for="calculatedTier in activeSlayerTiers.map(function (tier){ return calculateInstance(tier, true); })"
+                v-text="calculatedTier.name"></option>
             </select>
           </div>
           <table class="table table-responsive-md table-striped table-dark table-bordered table-hover">
@@ -675,7 +680,7 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
                     title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>{{ neededResistanceLabel }}</u>
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
@@ -691,7 +696,7 @@
                 <tr
                   :class="{idleable : monster.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
                   <td class="text-center">
-                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName" v-text="monster.expansion.short"></span><span v-text="monster.name"></span>
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
                       title="This monster is able to put you to sleep for +20% damage.">
                     <img :class="{statusIcon : monster.canStun , hide : !monster.canStun}" src="assets/stun.png"
@@ -708,24 +713,24 @@
                       :class="{statusIcon : (monster.name == 'Greater Skeletal Dragon') , hide : !(monster.name == 'Greater Skeletal Dragon')}"
                       src="assets/warning.png" title="Unable to determine with certainty due to affliction.">
                   </td>
-                  <td class="text-center">{{monster.attackStyle}}</td>
-                  <td class="text-center">{{monster.intimidation}}</td>
+                  <td class="text-center" v-text="monster.attackStyle"></td>
+                  <td class="text-center" v-text="monster.intimidation"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{monster.maxHit}}</td>
-                  <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
-                  <td class="text-center">{{monster.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                  <td class="text-center" v-text="monster.maxHit"></td>
+                  <td class="text-center" v-text="monster.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(monster.minimumDR)"></td>
+                  <td class="text-center" v-text="monster.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
                 </tr>
                 <tr v-for="attack in monster.attacks"
                   :class="{idleable : attack.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
                   <td class="text-center"></td>
                   <td class="text-center"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{attack.name}}</td>
-                  <td class="text-center">{{attack.maxHit}}</td>
-                  <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
-                  <td class="text-center">{{attack.minimumHP}} HP for {{currentDR}} {{resistanceUnit}}</td>
+                  <td class="text-center" v-text="attack.name"></td>
+                  <td class="text-center" v-text="attack.maxHit"></td>
+                  <td class="text-center" v-text="attack.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(attack.minimumDR)"></td>
+                  <td class="text-center" v-text="attack.minimumHP + ' HP for ' + currentDR + ' ' + resistanceUnit"></td>
                 </tr>
                 <br>
               </template>
@@ -745,7 +750,7 @@
                 <th class="align-middle text-center" style="width: 11%" scope="col">
                   <div data-toggle="tooltip" data-placement="top"
                     title="Total DR%/AR% you need equipped to safely idle this monster with your currently set HP">
-                    <u>{{ neededResistanceLabel }}</u>
+                    <u v-text="neededResistanceLabel">DR% Needed</u>
                   </div>
                 </th>
                 <th class="align-middle text-center" style="width: 11%" scope="col">
@@ -761,7 +766,7 @@
                 <tr
                   :class="{idleable : monster.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
                   <td class="text-center">
-                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName">{{monster.expansion.short}}</span>{{monster.name}}
+                    <span class="expansionBadge" :class="monster.expansion.cssClass" :title="monster.expansion.fullName" v-text="monster.expansion.short"></span><span v-text="monster.name"></span>
                     <span v-if="monster.damageType === 'melvorD:Pure'" class="pureDamageBadge"
                       title="Deals Pure Damage (ignores DR% and AR%)">Pure</span>
                     <img :class="{statusIcon : monster.canSleep , hide : !monster.canSleep}" src="assets/sleep.png"
@@ -780,24 +785,24 @@
                       :class="{statusIcon : (monster.name == 'Greater Skeletal Dragon') , hide : !(monster.name == 'Greater Skeletal Dragon')}"
                       src="assets/warning.png" title="Unable to determine with certainty due to affliction.">
                   </td>
-                  <td class="text-center">{{monster.attackStyle}}</td>
-                  <td class="text-center">{{monster.intimidation}}</td>
+                  <td class="text-center" v-text="monster.attackStyle"></td>
+                  <td class="text-center" v-text="monster.intimidation"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{monster.maxHit}}</td>
-                  <td class="text-center">{{monster.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(monster.minimumDR)}}</td>
-                  <td class="text-center">{{monster.minimumHP}}</td>
+                  <td class="text-center" v-text="monster.maxHit"></td>
+                  <td class="text-center" v-text="monster.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(monster.minimumDR)"></td>
+                  <td class="text-center" v-text="monster.minimumHP"></td>
                 </tr>
                 <tr v-for="attack in monster.attacks"
                   :class="{idleable : attack.isIdleable, warning : (monster.name == 'Wicked Greater Dragon' || monster.name == 'Greater Skeletal Dragon')}">
                   <td class="text-center"></td>
                   <td class="text-center"></td>
                   <td class="text-center"></td>
-                  <td class="text-center">{{attack.name}}</td>
-                  <td class="text-center">{{attack.maxHit}}</td>
-                  <td class="text-center">{{attack.reducedMaxHit}}</td>
-                  <td class="text-center">{{formatDRCell(attack.minimumDR)}}</td>
-                  <td class="text-center">{{attack.minimumHP}}</td>
+                  <td class="text-center" v-text="attack.name"></td>
+                  <td class="text-center" v-text="attack.maxHit"></td>
+                  <td class="text-center" v-text="attack.reducedMaxHit"></td>
+                  <td class="text-center" v-text="formatDRCell(attack.minimumDR)"></td>
+                  <td class="text-center" v-text="attack.minimumHP"></td>
                 </tr>
                 <br>
               </template>
