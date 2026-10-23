@@ -2,6 +2,10 @@ body{
     background: #806a22;
 }
 
+[v-cloak] {
+    display: none;
+}
+
 u {    
   border-bottom: 1px dotted white;
   text-decoration: none;

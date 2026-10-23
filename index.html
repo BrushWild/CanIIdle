@@ -36,7 +36,7 @@
 </head>
 
 <body>
-  <div id='app' class="container-fluid">
+  <div id='app' class="container-fluid" v-cloak>
     <h1 class="text-white text-center my-4" data-toggle="tooltip" data-placement="bottom"
       title="Now with Strongholds, Atlas of Discovery, and Into the Abyss!">
       {{ realm === 'Abyssal' ? 'Can I Idle Into the Abyss?' : 'Can I Idle Melvor?' }}</h1>
@@ -806,38 +806,38 @@
         </div>
       </div>
     </div>
-  </div>
-  <div id="footerCredits" class="text-white text-center my-4 mx-auto container">
-    <h3>DR% / AR% is always input and displayed before Combat Triangle bonuses. Make sure you double-check which value you use.</h3>
-    <h4>Check DR% / AR% in the combat stats window (NOT the equipment page pop-up, as this <i>only</i> accounts for equipment bonuses).</h4>
-    <h4>Make sure to check DR% / AR% when out of combat to minimise triangle interference.</h4>
+    <div id="footerCredits" class="text-white text-center my-4 mx-auto container">
+      <h3>DR% / AR% is always input and displayed before Combat Triangle bonuses. Make sure you double-check which value you use.</h3>
+      <h4>Check DR% / AR% in the combat stats window (NOT the equipment page pop-up, as this <i>only</i> accounts for equipment bonuses).</h4>
+      <h4>Make sure to check DR% / AR% when out of combat to minimise triangle interference.</h4>
 
-    <hr class="my-4">
-    <h3>Credits &amp; Attribution</h3>
-    <p class="lead">
-      This site is a continuation of a long-standing Melvor Idle community project, forked from
-      <a href="https://github.com/zxv975/CanIIdle"><u>zxv975/CanIIdle</u></a> and maintained at
-      <a href="https://github.com/BrushWild/CanIIdle"><u>BrushWild/CanIIdle</u></a>.
-    </p>
-    <p>
-      The original calculator was created by <strong>Dr BoomTown</strong>, further developed by <strong>Sublimed Disciple</strong>,
-      updated and modernised by <strong>Silberdrachi</strong>, and updated for the <em>Throne of the Herald</em> (v1.1) expansion by
-      <strong>Zxv</strong> (<a href="https://github.com/zxv975/CanIIdle"><u>zxv975/CanIIdle</u></a>).
-    </p>
-    <h5><a href="https://drboomtown.github.io/">Can I Idle This? (by Dr BoomTown)</a></h5>
-    <h5><a href="https://sublimedisciple.github.io/idle-slayer.html">Can I Idle This? (by Sublimed Disciple)</a></h5>
-    <h5><a href="https://silberdrachi.github.io/CanIIdle/">Can I Idle Melvor? (by Silberdrachi)</a></h5>
-    <h5><a href="https://github.com/zxv975/CanIIdle">Can I Idle Throne of the Herald? (by Zxv - zxv975/CanIIdle)</a></h5>
+      <hr class="my-4">
+      <h3>Credits &amp; Attribution</h3>
+      <p class="lead">
+        This site is a continuation of a long-standing Melvor Idle community project, forked from
+        <a href="https://github.com/zxv975/CanIIdle"><u>zxv975/CanIIdle</u></a> and maintained at
+        <a href="https://github.com/BrushWild/CanIIdle"><u>BrushWild/CanIIdle</u></a>.
+      </p>
+      <p>
+        The original calculator was created by <strong>Dr BoomTown</strong>, further developed by <strong>Sublimed Disciple</strong>,
+        updated and modernised by <strong>Silberdrachi</strong>, and updated for the <em>Throne of the Herald</em> (v1.1) expansion by
+        <strong>Zxv</strong> (<a href="https://github.com/zxv975/CanIIdle"><u>zxv975/CanIIdle</u></a>).
+      </p>
+      <h5><a href="https://drboomtown.github.io/">Can I Idle This? (by Dr BoomTown)</a></h5>
+      <h5><a href="https://sublimedisciple.github.io/idle-slayer.html">Can I Idle This? (by Sublimed Disciple)</a></h5>
+      <h5><a href="https://silberdrachi.github.io/CanIIdle/">Can I Idle Melvor? (by Silberdrachi)</a></h5>
+      <h5><a href="https://github.com/zxv975/CanIIdle">Can I Idle Throne of the Herald? (by Zxv - zxv975/CanIIdle)</a></h5>
 
-    <hr class="my-3">
-    <h4>AI Coding Tool Disclosure</h4>
-    <p>
-      The Melvor Idle <strong>v1.3.1</strong> expansion updates (Base Game Strongholds, <em>Atlas of Discovery</em> v1.2, and
-      <em>Into the Abyss</em> v1.3.1), automated CDN data extraction scripts (<code>scripts/build-data.mjs</code>), and combat
-      calculation engine refactoring were developed with the assistance of AI coding tools.
-    </p>
-    <br>
-    <p>"Melvor Idle" is a trademark of Games by Malcs Pty Ltd and is used with the permission of Games by Malcs.</p>
+      <hr class="my-3">
+      <h4>AI Coding Tool Disclosure</h4>
+      <p>
+        The Melvor Idle <strong>v1.3.1</strong> expansion updates (Base Game Strongholds, <em>Atlas of Discovery</em> v1.2, and
+        <em>Into the Abyss</em> v1.3.1), automated CDN data extraction scripts (<code>scripts/build-data.mjs</code>), and combat
+        calculation engine refactoring were developed with the assistance of AI coding tools.
+      </p>
+      <br>
+      <p>"Melvor Idle" is a trademark of Games by Malcs Pty Ltd and is used with the permission of Games by Malcs.</p>
+    </div>
   </div>
 </body>
 
@@ -848,13 +848,6 @@
     $('[data-toggle="tooltip"]').tooltip();
   });
 </script>
-<script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/dungeonData.js"></script>
-<script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/combatAreaData.js"></script>
-<script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/slayerTaskData.js"></script>
-<script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/monsterData.js"></script>
-<script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/slayerAreaData.js"></script>
-<script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/strongholdData.js"></script>
-<script type="module" src="./DataImportTools/Exported_Data/Exported_Data_TotH/abyssalData.js"></script>
 
 <script type="module">
   import { dungeonData } from "./DataImportTools/Exported_Data/Exported_Data_TotH/dungeonData.js"
